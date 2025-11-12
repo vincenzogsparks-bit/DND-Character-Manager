@@ -1,0 +1,419 @@
+/* Custom styles */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* NEW: Animation for interactive icon */
+@keyframes pulse-interact {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(236, 201, 75, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(236, 201, 75, 0.8);
+    }
+}
+
+/* Splash screen styles */
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1a202c;
+    /* Dark background */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    cursor: pointer;
+    transition: opacity 0.5s ease-out;
+}
+
+#splash-placeholder {
+    width: 200px;
+    height: 200px;
+    background-color: #2d3748;
+    /* Darker gray */
+    border: 4px solid #ecc94b;
+    /* Solid Gold/Yellow border */
+    border-radius: 50%;
+    /* Circular */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #ecc94b;
+    /* Lighter gray text */
+    font-style: italic;
+    animation: pulse-interact 2s infinite ease-in-out;
+    /* Apply pulse animation */
+}
+
+#splash-icon {
+    width: 100px;
+    /* SVG size */
+    height: 100px;
+    fill: #ecc94b;
+}
+
+#splash-text {
+    font-size: 2.5rem;
+    color: #ecc94b;
+    /* Yellow text */
+    margin-top: 2rem;
+    font-weight: 700;
+    /* Bolder font */
+    letter-spacing: 2px;
+    /* More prominent spacing */
+    text-shadow: 0 0 8px rgba(236, 201, 75, 0.3);
+    /* Subtle glow effect */
+}
+
+/* Main content - hidden by default */
+#main-content {
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+    pointer-events: none;
+    /* Disable interaction until loaded */
+}
+
+#main-content.loaded {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Utility class to hide elements */
+.hidden {
+    display: none;
+}
+
+/* NEW: Character Portrait Style */
+#character-portrait-container {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 3px solid #ecc94b;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(236, 201, 75, 0.5);
+    background-color: #2d3748;
+    /* Dark background as fallback */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#character-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Stat block styles */
+.stat-block {
+    background-color: #2d3748;
+    /* Dark gray */
+    border: 1px solid #4a5568;
+    /* Medium gray border */
+}
+
+.stat-block .modifier {
+    color: #ecc94b;
+    /* Yellow */
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.stat-block .score {
+    font-size: 1.125rem;
+}
+
+.stat-block .label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Proficiency/Speed block styles */
+.prof-speed-block {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+}
+
+/* Saving Throw and Skill styles */
+.save-item,
+.skill-item {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+}
+
+.save-item.proficient,
+.skill-item.proficient {
+    background-color: #374151; /* CHANGED: Reverted from olive to blue-gray */
+    border-color: #ecc94b;
+    color: #ecc94b;
+}
+
+.save-item .mod,
+.skill-item .mod {
+    font-size: 0.75rem;
+    color: #a0aec0;
+    /* Lighter gray */
+}
+
+.save-item.proficient .mod,
+.skill-item.proficient .mod {
+    color: #ecc94b;
+}
+
+.save-item .bonus,
+.skill-item .bonus {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.sense-item {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+}
+
+/* Skill roller styles */
+.skill-rollable {
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.skill-rollable:hover {
+    background-color: #4a5568;
+    /* Lighter gray on hover */
+}
+
+.skill-rollable.proficient:hover {
+    background-color: #4b5563; /* CHANGED: Reverted from olive-hover to blue-gray hover */
+}
+
+/* NEW: Saving Throw rollable styles */
+.save-rollable {
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.save-rollable:hover {
+    background-color: #4a5568;
+    /* Lighter gray on hover */
+}
+
+.save-rollable.proficient:hover {
+    background-color: #4b5563; /* CHANGED: Reverted from olive-hover to blue-gray hover */
+}
+
+
+.adv-icon {
+    color: #48bb78;
+    /* Green */
+    font-size: 0.8rem;
+    font-weight: 900;
+    border: 1px solid #48bb78;
+    border-radius: 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}
+
+.dis-icon {
+    color: #f56565;
+    /* Red */
+    font-size: 0.8rem;
+    font-weight: 900;
+    border: 1px solid #f56565;
+    border-radius: 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: inline-flex;
+    justify-content: center;
+    align-itemsM: center;
+    line-height: 1;
+}
+
+/* Navigation Button styles */
+.nav-button {
+    transition: all 0.2s ease-in-out;
+    color: #a0aec0;
+    /* Gray text */
+    border-top: 4px solid transparent;
+    /* Transparent top border for active state */
+    padding-bottom: 8px;
+    /* Adjust padding to account for border */
+}
+
+.nav-button:hover {
+    color: #e2e8f0;
+    /* Light text on hover */
+}
+
+.nav-button.active {
+    color: #ecc94b;
+    /* Yellow text */
+    border-top-color: #ecc94b;
+    /* Yellow top border */
+}
+
+/* NEW: Action Roll Button styles */
+.action-roll-button {
+    background-color: #4a5568;
+    /* Gray */
+    color: #e2e8f0;
+    /* Light text */
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #718096;
+    transition: all 0.2s ease;
+}
+
+.action-roll-button:hover {
+    background-color: #718096;
+    /* Lighter gray */
+    color: #ffffff;
+    border-color: #a0aec0;
+}
+
+/* NEW: Seamless HP Input */
+.hp-input {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1.875rem;
+    /* 3xl */
+    line-height: 2.25rem;
+    width: 4rem;
+    /* Adjust width as needed */
+    text-align: right;
+    padding: 0;
+    margin: 0;
+    /* Hide arrows on number input */
+    -moz-appearance: textfield;
+}
+
+.hp-input::-webkit-outer-spin-button,
+.hp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* NEW: Temporary HP Input */
+.temp-hp-input {
+    background-color: #4a5568;
+    /* Slightly lighter gray */
+    border: 1px solid #718096;
+    color: #e2e8f0;
+    /* Light text */
+    font-weight: 600;
+    font-size: 1.125rem;
+    /* lg */
+    line-height: 1.5rem;
+    width: 4rem;
+    text-align: center;
+    padding: 2px 4px;
+    margin: 0;
+    border-radius: 4px;
+    -moz-appearance: textfield;
+}
+.temp-hp-input::-webkit-outer-spin-button,
+.temp-hp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* NEW: HP Modifier Button Style */
+.hp-mod-button {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border: 1px solid #718096;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.hp-mod-button:hover {
+    background-color: #718096;
+    color: #ffffff;
+}
+
+
+/* NEW: Critical Hit Card Style */
+.action-card {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.action-card.crit {
+    border-color: #ecc94b;
+    /* Gold */
+    box-shadow: 0 0 15px 0 rgba(236, 201, 75, 0.5);
+}
+
+/* Feature Card Style */
+.feature-card {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* NEW: Inventory Form Styles */
+.inventory-form-field {
+    background-color: #1a202c; /* Darkest background */
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+/* NEW: Dice Button Styles */
+.dice-button-svg {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 4px;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+.dice-button-svg:hover {
+    transform: scale(1.1);
+    background-color: #2d3748;
+    /* Dark hover */
+}
+.dice-button-svg:active {
+    transform: scale(1.05);
+}
+.dice-button-svg svg {
+    display: block;
+}
+/* NEW: Roll History Button Style */
+.roll-history-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background-color: #2d3748; /* Darker gray when disabled */
+}
