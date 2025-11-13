@@ -2099,7 +2099,8 @@ document.addEventListener('DOMContentLoaded', () => {
         skillHistoryForward: document.getElementById('skill-history-forward'),
         saveHistoryBack: document.getElementById('save-history-back'),
         saveHistoryForward: document.getElementById('save-history-forward'),
-        actionHistoryBack: document('action-history-back'),
+        // FIX: Replaced "document(" with "document.getElementById("
+        actionHistoryBack: document.getElementById('action-history-back'), 
         actionHistoryForward: document.getElementById('action-history-forward'),
         
         // Actions Page
@@ -2116,7 +2117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         coinPpInput: document.getElementById('coin-pp-input'),
         coinGpInput: document.getElementById('coin-gp-input'),
         coinEpInput: document.getElementById('coin-ep-input'),
-        coinSpInput: document.getElementById('coin-sp-input'),
+        coinSpInput: document('coin-sp-input'),
         coinCpInput: document.getElementById('coin-cp-input'),
         coinAddButton: document.getElementById('coin-add-button'),
         coinRemoveButton: document.getElementById('coin-remove-button'),
