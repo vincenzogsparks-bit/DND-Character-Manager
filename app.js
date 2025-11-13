@@ -541,7 +541,7 @@ function renderInventory() {
              const bonusEl = el.querySelector('.bonus');
              if (bonusEl) bonusEl.textContent = `${modifier >= 0 ? '+' : ''}${modifier}`;
         }
-    });
+    }
 
     // --- Senses ---
     const percMod = modifiers.wis + (characterState.skillProficiencies.perception ? proficiencyBonus : 0);
@@ -602,7 +602,7 @@ function loadCharacter(docId) {
     }
 
     if (isLocalMode) {
-        // In local mode, mock the character list
+        // In local mode, just load the one saved state
         const state = localPersist.load(docId);
         Object.assign(characterState, state);
         if (!initialLoadComplete) initialLoadComplete = true;
@@ -1624,7 +1624,7 @@ function showAppPage(pageIdToShow) {
 }
 
 
-// --- CHARACTER SHEET NAVIGATION LOGIC (Modified to fix page switching) ---
+// --- CHARACTER SHEET NAVIGATION LOGIC (Unchanged) ---
 
 function handleNavigation(event) {
     const clickedButton = event.target.closest('.nav-button');
@@ -1632,21 +1632,28 @@ function handleNavigation(event) {
 
     const targetPageId = clickedButton.dataset.page;
     
-    // 1. Hide all pages and deactivate buttons using strict class toggles
+    // Hide all pages
     document.querySelectorAll('.page-content').forEach(page => {
         page.classList.add('hidden');
     });
+
+    // Deactivate all buttons
     document.querySelectorAll('.nav-button').forEach(button => {
         button.classList.remove('active');
+        button.style.borderTopWidth = '4px';
+        button.style.borderTopColor = 'transparent';
     });
 
-    // 2. Show the target page and activate the clicked button
+    // Show the target page
     const targetPage = document.getElementById(targetPageId);
     if (targetPage) {
         targetPage.classList.remove('hidden');
     }
-    
+
+    // Activate the clicked button
     clickedButton.classList.add('active');
+    clickedButton.style.borderTopWidth = '4px';
+    clickedButton.style.borderTopColor = '#ecc94b'; 
 }
 
 
@@ -2317,9 +2324,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Character Sheet *Internal* Navigation
-        const navButton = event.target.closest('.nav-button');
-        if (navButton) {
-             handleNavigation(event);
+        if (event.target.closest('.nav-button')) {
+            handleNavigation(event);
         }
     });
 
@@ -2355,7 +2361,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
     if (defaultButton) {
         defaultButton.classList.add('active');
-        // Removed inline style settings that conflicted with CSS classes
+        defaultButton.style.borderTopWidth = '4px';
+        defaultButton.style.borderTopColor = '#ecc94b';
     }
 
     // Initialize Persistence logic
