@@ -99,8 +99,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+					<div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
                         <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Ability Scores</h2>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <div class="stat-block rounded-lg p-4 text-center">
@@ -265,751 +264,710 @@
                                 </li>
                             </ul>
                         </div>
-					</div> <div id="page-actions" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-
-                            <div
-                                class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 pb-3 mb-4">
-                                <h2 class="text-3xl font-bold text-yellow-400">Actions</h2>
-                               <div class="flex items-center space-x-2 w-full sm:w-auto mt-3 sm:mt-0">
-                                    <button id="action-history-back" class="hp-mod-button roll-history-button" disabled>&lt;</button>
-                                    <button id="action-history-forward" class="hp-mod-button roll-history-button" disabled>&gt;</button>
-                                    <div id="action-roll-display"
-                                        class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono w-full min-h-[40px]">
-                                    </div>
+					</div> 
+                    
+                    <div id="page-character-sheet" class="hidden">
+                        
+                        <header class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-6">
+                            <div class="flex items-center space-x-4">
+                                <div id="character-portrait-container">
+                                    <img id="character-portrait" src="" alt="Character Portrait">
+                                </div>
+                                <div>
+                                    <h1 id="char-sheet-name" class="text-4xl font-bold text-yellow-400">Thangrim Ironfist</h1>
+                                    <p class="text-lg text-gray-400"><span id="char-sheet-race">Mountain Dwarf</span> | <span id="char-sheet-class-level">Fighter 3</span></p>
                                 </div>
                             </div>
-
-                            <div class="space-y-8">
-
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Actions</h3>
-                                    <div class="space-y-4" id="actions-list">
-                                        </div>
-                                </div>
-
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Bonus Actions</h3>
-                                    <div class="space-y-4" id="bonus-actions-list">
-                                        </div> 
-                                </div> 
-                                
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Other</h3>
-                                    <div class="space-y-4" id="other-actions-list">
-                                        </div>
-                                </div>
+                            <div class="flex space-x-4">
+                                <button id="edit-character-button"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
+                                    Edit Details
+                                </button>
+                                <button id="back-to-landing-button"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200">
+                                    &lt; Back to Menu
+                                </button>
                             </div>
-                        </div>
-                    </div>
-                    <div id="page-features" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Features & Traits</h2>
-
-                            <div id="features-container" class="space-y-8">
-                                </div>
-                        </div>
-                    </div>
-                    <div id="page-background" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Background
-                            </h2>
+                        </header>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
                             
-                            <div class="space-y-6">
+                            <div class="lg:col-span-2 grid grid-cols-3 md:grid-cols-6 gap-3">
+                                <div id="stat-str" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="str" data-save-name="Strength Save"></div>
+                                <div id="stat-dex" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="dex" data-save-name="Dexterity Save"></div>
+                                <div id="stat-con" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="con" data-save-name="Constitution Save"></div>
+                                <div id="stat-int" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="int" data-save-name="Intelligence Save"></div>
+                                <div id="stat-wis" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="wis" data-save-name="Wisdom Save"></div>
+                                <div id="stat-cha" class="stat-block rounded-lg p-3 text-center cursor-pointer" data-stat="cha" data-save-name="Charisma Save"></div>
+                            </div>
 
-                                <div class="feature-card rounded-lg p-6">
-                                    <h3 id="background-name" class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Background Name</h3>
-                                    
+                            <div class="lg:col-span-2 grid grid-cols-4 gap-3">
+                                
+                                <div class="prof-speed-block rounded-lg p-3 text-center">
+                                    <div class="text-xs font-bold uppercase text-gray-400">Prof. Bonus</div>
+                                    <div id="char-sheet-prof-bonus" class="text-4xl font-bold text-yellow-400 mt-1">+2</div>
+                                </div>
+                                
+                                <div class="prof-speed-block rounded-lg p-3 text-center">
+                                    <div class="text-xs font-bold uppercase text-gray-400">AC</div>
+                                    <div id="ac-display" class="text-4xl font-bold text-yellow-400 mt-1">15</div>
+                                </div>
+                                
+                                <div class="prof-speed-block rounded-lg p-3 text-center">
+                                    <div class="text-xs font-bold uppercase text-gray-400">Initiative</div>
+                                    <div id="initiative-display" class="text-4xl font-bold text-yellow-400 mt-1">+0</div>
+                                </div>
+                                
+                                <div class="prof-speed-block rounded-lg p-3 text-center">
+                                    <div class="text-xs font-bold uppercase text-gray-400">Speed</div>
+                                    <div id="char-sheet-speed" class="text-4xl font-bold text-yellow-400 mt-1">30 ft.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                            
+                            <div class="lg:col-span-2 bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm font-bold uppercase text-gray-400">Current HP / Max HP</div>
+                                    <div class="text-sm font-bold uppercase text-gray-400">Temp HP</div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1">
+                                    <div class="flex items-center space-x-2">
+                                        <button id="hp-minus-button" class="hp-mod-button">-</button>
+                                        <input type="number" id="current-hp" class="hp-input" value="10">
+                                        <span class="text-3xl font-bold text-white">/ <span id="max-hp">10</span></span>
+                                        <button id="hp-plus-button" class="hp-mod-button">+</button>
+                                    </div>
+                                    <input type="number" id="temp-hp" class="temp-hp-input" placeholder="0" value="0">
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                                <div class="text-sm font-bold uppercase text-gray-400 mb-2 text-center">Dice Roller</div>
+                                <div class="flex justify-around items-center space-x-2">
+                                    <button class="dice-button-svg" data-die="4">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'></circle><path d='M10 8l4 8M14 8l-4 8'></path></svg>
+                                        D4
+                                    </button>
+                                    <button class="dice-button-svg" data-die="6">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect></svg>
+                                        D6
+                                    </button>
+                                    <button class="dice-button-svg" data-die="8">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 22h20L12 2z'></path><line x1='12' y1='2' x2='12' y2='22'></line></svg>
+                                        D8
+                                    </button>
+                                    <button class="dice-button-svg" data-die="10">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L4 14h16L12 2z'></path><path d='M12 22L12 2M2 14h20'></path></svg>
+                                        D10
+                                    </button>
+                                    <button class="dice-button-svg" data-die="12">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 22h20L12 2z'></path><path d='M12 22L12 2M7 12l10 0M5 18l14 0M10 6l4 12'></path></svg>
+                                        D12
+                                    </button>
+                                    <button class="dice-button-svg" data-die="20">
+                                        <svg class='w-8 h-8 text-yellow-300' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 22h20L12 2z'></path><path d='M12 22L12 2M7 12l10 0M5 18l14 0M10 6l4 12M12 2l-5 10'></path></svg>
+                                        D20
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            
+                            <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                                
+                                <div class="flex items-center justify-between border-b border-gray-700 pb-2 mb-3">
+                                    <h3 class="text-xl font-bold text-yellow-400">Saves</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <button id="save-history-back" class="hp-mod-button roll-history-button" disabled>&lt;</button>
+                                        <button id="save-history-forward" class="hp-mod-button roll-history-button" disabled>&gt;</button>
+                                    </div>
+                                </div>
+                                
+                                <div id="save-roll-display" class="bg-gray-900 border border-gray-700 rounded-md px-3 py-1 text-sm text-yellow-300 font-mono mb-3 min-h-[30px] flex items-center">Roll Result</div>
+                                
+                                <ul class="space-y-2">
+                                    <li id="save-str" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="str" data-save-name="Strength Save" data-modifier="+0">
+                                        <span class="font-bold">Strength</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="save-dex" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="dex" data-save-name="Dexterity Save" data-modifier="+0">
+                                        <span class="font-bold">Dexterity</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="save-con" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="con" data-save-name="Constitution Save" data-modifier="+0">
+                                        <span class="font-bold">Constitution</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="save-int" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="int" data-save-name="Intelligence Save" data-modifier="+0">
+                                        <span class="font-bold">Intelligence</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="save-wis" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="wis" data-save-name="Wisdom Save" data-modifier="+0">
+                                        <span class="font-bold">Wisdom</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="save-cha" class="save-item flex justify-between items-center p-3 rounded-lg" data-stat="cha" data-save-name="Charisma Save" data-modifier="+0">
+                                        <span class="font-bold">Charisma</span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700 lg:col-span-2">
+                                
+                                <div class="flex items-center justify-between border-b border-gray-700 pb-2 mb-3">
+                                    <h3 class="text-xl font-bold text-yellow-400">Skills</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <button id="skill-history-back" class="hp-mod-button roll-history-button" disabled>&lt;</button>
+                                        <button id="skill-history-forward" class="hp-mod-button roll-history-button" disabled>&gt;</button>
+                                    </div>
+                                </div>
+                                
+                                <div id="skill-roll-display" class="bg-gray-900 border border-gray-700 rounded-md px-3 py-1 text-sm text-yellow-300 font-mono mb-3 min-h-[30px] flex items-center">Roll Result</div>
+
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+                                    <li id="skill-acrobatics" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Acrobatics" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Acrobatics <span class="mod text-gray-400">(DEX)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-animalhandling" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Animal Handling" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Animal Handling <span class="mod text-gray-400">(WIS)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-arcana" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Arcana" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Arcana <span class="mod text-gray-400">(INT)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-athletics" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Athletics" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Athletics <span class="mod text-gray-400">(STR)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-deception" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Deception" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Deception <span class="mod text-gray-400">(CHA)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-history" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="History" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">History <span class="mod text-gray-400">(INT)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-insight" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Insight" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Insight <span class="mod text-gray-400">(WIS)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-intimidation" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Intimidation" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Intimidation <span class="mod text-gray-400">(CHA)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-investigation" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Investigation" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Investigation <span class="mod text-gray-400">(INT)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-medicine" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Medicine" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Medicine <span class="mod text-gray-400">(WIS)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-nature" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Nature" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Nature <span class="mod text-gray-400">(INT)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-perception" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Perception" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Perception <span class="mod text-gray-400">(WIS)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-performance" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Performance" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Performance <span class="mod text-gray-400">(CHA)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-persuasion" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Persuasion" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Persuasion <span class="mod text-gray-400">(CHA)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-religion" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Religion" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Religion <span class="mod text-gray-400">(INT)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-sleightofhand" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Sleight of Hand" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Sleight of Hand <span class="mod text-gray-400">(DEX)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-stealth" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Stealth" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Stealth <span class="mod text-gray-400">(DEX)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                    <li id="skill-survival" class="skill-item flex justify-between items-center p-2 rounded-lg" data-skill-name="Survival" data-modifier="0" data-roll-type="normal">
+                                        <span class="font-bold">Survival <span class="mod text-gray-400">(WIS)</span></span>
+                                        <span class="bonus">+0</span>
+                                    </li>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-1 space-y-6">
+                                
+                                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                                    <h3 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2 mb-3">Passive Senses</h3>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="sense-item flex justify-between items-center p-2 rounded-lg">
+                                            <span class="font-bold text-gray-400">Passive Perception:</span>
+                                            <span id="passive-perception" class="font-bold text-white text-lg">10</span>
+                                        </div>
+                                        <div class="sense-item flex justify-between items-center p-2 rounded-lg">
+                                            <span class="font-bold text-gray-400">Passive Investigation:</span>
+                                            <span id="passive-investigation" class="font-bold text-white text-lg">10</span>
+                                        </div>
+                                        <div class="sense-item flex justify-between items-center p-2 rounded-lg">
+                                            <span class="font-bold text-gray-400">Passive Insight:</span>
+                                            <span id="passive-insight" class="font-bold text-white text-lg">10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                                    <h3 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2 mb-3">Rests</h3>
+                                    <div class="flex space-x-4">
+                                        <button id="short-rest-button" class="action-roll-button bg-indigo-600 hover:bg-indigo-700 border-indigo-500 w-full py-3">
+                                            Short Rest
+                                        </button>
+                                        <button id="long-rest-button" class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 w-full py-3">
+                                            Long Rest
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="page-content-wrapper">
+                            
+                            <div id="page-main" class="page-content space-y-6">
+                                
+                                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                    <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Features & Abilities</h2>
                                     <div class="space-y-4">
-                                        <div>
-                                            <h4 id="background-feature-name" class="text-xl font-bold text-white">Feature: Feature Name</h4>
-                                            <p id="background-feature-desc" class="text-sm text-gray-300 mt-2">
-                                                Feature description will load here.
-                                            </p>
+                                        <div class="feature-card rounded-lg p-4 flex justify-between items-center">
+                                            <h4 class="text-lg font-bold">Giants Might</h4>
+                                            <div class="flex items-center space-x-2">
+                                                <span id="giants-might-uses-span" class="text-xl font-bold text-yellow-400">2</span>
+                                                <span class="text-gray-400">uses</span>
+                                            </div>
                                         </div>
+                                        </div>
+                                </div>
+
+                                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                    <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Equipped Items</h2>
+                                    <p class="text-gray-400 text-sm">Equipped weapons appear on the **Actions** tab.</p>
+                                </div>
+                                
+                            </div>
+							<div class="page-content-wrapper">
+                            
+                            <div id="page-main" class="page-content space-y-6">
+                                
+                                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                    <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Features & Abilities</h2>
+                                    <div class="space-y-4">
+                                        <div class="feature-card rounded-lg p-4 flex justify-between items-center">
+                                            <h4 class="text-lg font-bold">Giants Might</h4>
+                                            <div class="flex items-center space-x-2">
+                                                <span id="giants-might-uses-span" class="text-xl font-bold text-yellow-400">2</span>
+                                                <span class="text-gray-400">uses</span>
+                                            </div>
+                                        </div>
+                                        </div>
+                                </div>
+
+                                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                    <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Equipped Items</h2>
+                                    <p class="text-gray-400 text-sm">Equipped weapons appear on the **Actions** tab.</p>
+                                </div>
+                                
+                            </div>
+
+                            <div id="page-actions" class="page-content hidden">
+                                <div
+                                    class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+
+                                    <div
+                                        class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                                        <h2 class="text-3xl font-bold text-yellow-400">Actions</h2>
+                                       <div class="flex items-center space-x-2 w-full sm:w-auto mt-3 sm:mt-0">
+                                            <button id="action-history-back" class="hp-mod-button roll-history-button" disabled>&lt;</button>
+                                            <button id="action-history-forward" class="hp-mod-button roll-history-button" disabled>&gt;</button>
+                                            <div id="action-roll-display"
+                                                class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono w-full min-h-[40px]">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-8">
+
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
+                                                Actions</h3>
+                                            <div class="space-y-4" id="actions-list">
+                                                </div>
+                                        </div>
+
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
+                                                Bonus Actions</h3>
+                                            <div class="space-y-4" id="bonus-actions-list">
+                                                </div> 
+                                        </div> 
                                         
-                                        <div class="border-t border-gray-600 pt-4">
-                                            <h4 class="text-xl font-bold text-white mb-3">Characteristics</h4>
-                                            <div id="characteristics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
+                                                Other</h3>
+                                            <div class="space-y-4" id="other-actions-list">
                                                 </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div class="feature-card rounded-lg p-6">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Origin Story</h3>
-                                    <textarea id="origin-story-textarea"
-                                        class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
-                                        placeholder="Write your character's origin story here. This data is saved to the cloud!"></textarea>
-                                </div>
-
                             </div>
-                        </div>
-                    </div>
-                    <div id="page-inventory" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Inventory
-                            </h2>
+                            <div id="page-features" class="page-content hidden">
+                                <div
+                                    class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+                                    <h2
+                                        class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
+                                        Features & Traits</h2>
 
-                                <div class="bg-gray-900 rounded-lg p-6 border border-gray-700 shadow-md">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2 mb-4">Coinage</h3>
+                                    <div id="features-container" class="space-y-8">
+                                        </div>
+                                </div>
+                            </div>
+                            <div id="page-background" class="page-content hidden">
+                                <div
+                                    class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+                                    <h2
+                                        class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
+                                        Background
+                                    </h2>
+                                    
+                                    <div class="space-y-6">
 
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#e5e4e2' stroke='#ffffff' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>P</text></svg>
-                                                Platinum (pp)
+                                        <div class="feature-card rounded-lg p-6">
+                                            <h3 id="background-name" class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Background Name</h3>
+                                            
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <h4 id="background-feature-name" class="text-xl font-bold text-white">Feature: Feature Name</h4>
+                                                    <p id="background-feature-desc" class="text-sm text-gray-300 mt-2">
+                                                        Feature description will load here.
+                                                    </p>
+                                                </div>
+                                                
+                                                <div class="border-t border-gray-600 pt-4">
+                                                    <h4 class="text-xl font-bold text-white mb-3">Characteristics</h4>
+                                                    <div id="characteristics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                        </div>
+                                                </div>
                                             </div>
-                                            <div id="coin-pp-display" class="text-3xl font-bold text-gray-200 mt-1">0</div>
                                         </div>
                                         
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#ffd700' stroke='#ccaa00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>G</text></svg>
-                                                Gold (gp)
-                                            </div>
-                                            <div id="coin-gp-display" class="text-3xl font-bold text-yellow-400 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b8860b' stroke='#7e5c00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>E</text></svg>
-                                                Electrum (ep)
-                                            </div>
-                                            <div id="coin-ep-display" class="text-3xl font-bold text-yellow-600 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#c0c0c0' stroke='#a0a0a0' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>S</text></svg>
-                                                Silver (sp)
-                                            </div>
-                                            <div id="coin-sp-display" class="text-3xl font-bold text-gray-400 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b87333' stroke='#8d5622' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>C</text></svg>
-                                                Copper (cp)
-                                            </div>
-                                            <div id="coin-cp-display" class="text-3xl font-bold text-red-700 mt-1">0</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="space-y-4 pt-4 border-t border-gray-700">
-                                        <h4 class="text-xl font-bold text-white">Adjust Coinage</h4>
-                                        
-                                        <div class="grid grid-cols-5 gap-3">
-                                            <input type="number" id="coin-pp-input" class="inventory-form-field text-center" placeholder="pp" value="0">
-                                            <input type="number" id="coin-gp-input" class="inventory-form-field text-center" placeholder="gp" value="0">
-                                            <input type="number" id="coin-ep-input" class="inventory-form-field text-center" placeholder="ep" value="0">
-                                            <input type="number" id="coin-sp-input" class="inventory-form-field text-center" placeholder="sp" value="0">
-                                            <input type="number" id="coin-cp-input" class="inventory-form-field text-center" placeholder="cp" value="0">
+                                        <div class="feature-card rounded-lg p-6">
+                                            <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Origin Story</h3>
+                                            <textarea id="origin-story-textarea"
+                                                class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
+                                                placeholder="Write your character's origin story here. This data is saved to the cloud!"></textarea>
                                         </div>
 
-                                        <div class="flex justify-between space-x-2">
-                                            <button id="coin-add-button" class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 flex-grow">
-                                                + ADD
-                                            </button>
-                                            <button id="coin-remove-button" class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 flex-grow">
-                                                - REMOVE
-                                            </button>
-                                            <button id="coin-clear-button" class="action-roll-button bg-gray-600 hover:bg-gray-700 border-gray-500">
-                                                x CLEAR
-                                            </button>
-                                        </div>
-
-                                        <p class="text-xs text-gray-500 text-center mt-3">
-                                            Conversions: 1 pp = 10 gp | 1 gp = 2 ep = 10 sp | 1 sp = 10 cp
-                                        </p>
                                     </div>
                                 </div>
-                                <div class="space-y-6">
-                                
-                                <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md space-y-4">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2">Add New Item</h3>
-                                    
-                                    <div>
-                                        <label for="item-type-select" class="block text-sm font-semibold text-gray-400 mb-1">Item Type</label>
-                                        <select id="item-type-select" class="inventory-form-field w-full" onchange="handleInventoryFormChange(this.value)">
-                                            <option value="">— Select Item Type —</option>
-                                            <option value="Weapon">Weapon</option>
-                                            <option value="Armor">Armor</option>
-                                            <option value="Other">Other Equipment</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div id="weapon-form-container" class="space-y-4 hidden">
-                                        <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Weapon Details</h4>
-                                        
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="weapon-name" class="block text-sm font-semibold text-gray-400 mb-1">Weapon Name</label>
-                                                <input type="text" id="weapon-name" class="inventory-form-field" placeholder="Dwarf-Forged Hammer">
+                            </div>
+                            <div id="page-inventory" class="page-content hidden">
+                                <div
+                                    class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+                                    <h2
+                                        class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
+                                        Inventory
+                                    </h2>
+
+                                        <div class="bg-gray-900 rounded-lg p-6 border border-gray-700 shadow-md">
+                                            <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2 mb-4">Coinage</h3>
+
+                                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                                                
+                                                <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
+                                                    <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
+                                                        <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#e5e4e2' stroke='#ffffff' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>P</text></svg>
+                                                        Platinum (pp)
+                                                    </div>
+                                                    <div id="coin-pp-display" class="text-3xl font-bold text-gray-200 mt-1">0</div>
+                                                </div>
+                                                
+                                                <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
+                                                    <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
+                                                        <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#ffd700' stroke='#ccaa00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>G</text></svg>
+                                                        Gold (gp)
+                                                    </div>
+                                                    <div id="coin-gp-display" class="text-3xl font-bold text-yellow-400 mt-1">0</div>
+                                                </div>
+                                                
+                                                <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
+                                                    <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
+                                                        <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b8860b' stroke='#7e5c00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>E</text></svg>
+                                                        Electrum (ep)
+                                                    </div>
+                                                    <div id="coin-ep-display" class="text-3xl font-bold text-yellow-600 mt-1">0</div>
+                                                </div>
+                                                
+                                                <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
+                                                    <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
+                                                        <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#c0c0c0' stroke='#a0a0a0' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>S</text></svg>
+                                                        Silver (sp)
+                                                    </div>
+                                                    <div id="coin-sp-display" class="text-3xl font-bold text-gray-400 mt-1">0</div>
+                                                </div>
+                                                
+                                                <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
+                                                    <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
+                                                        <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b87333' stroke='#8d5622' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>C</text></svg>
+                                                        Copper (cp)
+                                                    </div>
+                                                    <div id="coin-cp-display" class="text-3xl font-bold text-red-700 mt-1">0</div>
+                                                </div>
                                             </div>
+
+                                            <div class="space-y-4 pt-4 border-t border-gray-700">
+                                                <h4 class="text-xl font-bold text-white">Adjust Coinage</h4>
+                                                
+                                                <div class="grid grid-cols-5 gap-3">
+                                                    <input type="number" id="coin-pp-input" class="inventory-form-field text-center" placeholder="pp" value="0">
+                                                    <input type="number" id="coin-gp-input" class="inventory-form-field text-center" placeholder="gp" value="0">
+                                                    <input type="number" id="coin-ep-input" class="inventory-form-field text-center" placeholder="ep" value="0">
+                                                    <input type="number" id="coin-sp-input" class="inventory-form-field text-center" placeholder="sp" value="0">
+                                                    <input type="number" id="coin-cp-input" class="inventory-form-field text-center" placeholder="cp" value="0">
+                                                </div>
+
+                                                <div class="flex justify-between space-x-2">
+                                                    <button id="coin-add-button" class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 flex-grow">
+                                                        + ADD
+                                                    </button>
+                                                    <button id="coin-remove-button" class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 flex-grow">
+                                                        - REMOVE
+                                                    </button>
+                                                    <button id="coin-clear-button" class="action-roll-button bg-gray-600 hover:bg-gray-700 border-gray-500">
+                                                        x CLEAR
+                                                    </button>
+                                                </div>
+
+                                                <p class="text-xs text-gray-500 text-center mt-3">
+                                                    Conversions: 1 pp = 10 gp | 1 gp = 2 ep = 10 sp | 1 sp = 10 cp
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-6">
+                                        
+                                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md space-y-4">
+                                            <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2">Add New Item</h3>
+                                            
                                             <div>
-                                                <label for="weapon-proficiency" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
-                                                <select id="weapon-proficiency" class="inventory-form-field">
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
+                                                <label for="item-type-select" class="block text-sm font-semibold text-gray-400 mb-1">Item Type</label>
+                                                <select id="item-type-select" class="inventory-form-field w-full" onchange="handleInventoryFormChange(this.value)">
+                                                    <option value="">— Select Item Type —</option>
+                                                    <option value="Weapon">Weapon</option>
+                                                    <option value="Armor">Armor</option>
+                                                    <option value="Other">Other Equipment</option>
                                                 </select>
                                             </div>
                                             
-                                            <div>
-                                                <label for="weapon-attack-type" class="block text-sm font-semibold text-gray-400 mb-1">Attack Type</label>
-                                                <select id="weapon-attack-type" class="inventory-form-field">
-                                                    <option value="Melee">Melee</option>
-                                                    <option value="Ranged">Ranged</option>
-                                                </select>
-                                            </div>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <label for="weapon-damage" class="block text-sm font-semibold text-gray-400 mb-1">Damage (Dice String)</label>
-                                                    <input type="text" id="weapon-damage" class="inventory-form-field" placeholder="2d6">
-                                                </div>
-                                                <div>
-                                                    <label for="weapon-damage-type" class="block text-sm font-semibold text-gray-400 mb-1">Damage Type</label>
-                                                    <select id="weapon-damage-type" class="inventory-form-field">
-                                                        <option value="Bludgeoning">Bludgeoning</option>
-                                                        <option value="Piercing">Piercing</option>
-                                                        <option value="Slashing">Slashing</option>
-                                                        <option value="Fire">Fire</option>
-                                                        <option value="Cold">Cold</option>
-                                                        <option value="Poison">Poison</option>
+                                            <div id="weapon-form-container" class="space-y-4 hidden">
+                                                <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Weapon Details</h4>
+                                                
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label for="weapon-name" class="block text-sm font-semibold text-gray-400 mb-1">Weapon Name</label>
+                                                        <input type="text" id="weapon-name" class="inventory-form-field" placeholder="Dwarf-Forged Hammer">
+                                                    </div>
+                                                    <div>
+                                                        <label for="weapon-proficiency" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
+                                                        <select id="weapon-proficiency" class="inventory-form-field">
+                                                            <option value="Yes">Yes</option>
+                                                            <option value="No">No</option>
                                                         </select>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label for="weapon-attack-type" class="block text-sm font-semibold text-gray-400 mb-1">Attack Type</label>
+                                                        <select id="weapon-attack-type" class="inventory-form-field">
+                                                            <option value="Melee">Melee</option>
+                                                            <option value="Ranged">Ranged</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="grid grid-cols-2 gap-2">
+                                                        <div>
+                                                            <label for="weapon-damage" class="block text-sm font-semibold text-gray-400 mb-1">Damage (Dice String)</label>
+                                                            <input type="text" id="weapon-damage" class="inventory-form-field" placeholder="2d6">
+                                                        </div>
+                                                        <div>
+                                                            <label for="weapon-damage-type" class="block text-sm font-semibold text-gray-400 mb-1">Damage Type</label>
+                                                            <select id="weapon-damage-type" class="inventory-form-field">
+                                                                <option value="Bludgeoning">Bludgeoning</option>
+                                                                <option value="Piercing">Piercing</option>
+                                                                <option value="Slashing">Slashing</option>
+                                                                <option value="Fire">Fire</option>
+                                                                <option value="Cold">Cold</option>
+                                                                <option value="Poison">Poison</option>
+                                                                </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="weapon-reach" class="block text-sm font-semibold text-gray-400 mb-1">Reach/Range (ft)</label>
+                                                        <input type="number" id="weapon-reach" class="inventory-form-field" placeholder="5">
+                                                    </div>
+                                                    <div>
+                                                        <label for="weapon-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
+                                                        <input type="number" id="weapon-weight" class="inventory-form-field" placeholder="10">
+                                                    </div>
+                                                    <div>
+                                                        <label for="weapon-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
+                                                        <input type="number" id="weapon-cost" class="inventory-form-field" placeholder="50">
+                                                    </div>
+                                                    <div>
+                                                        <label for="weapon-properties" class="block text-sm font-semibold text-gray-400 mb-1">Properties (Comma Separated)</label>
+                                                        <input type="text" id="weapon-properties" class="inventory-form-field" placeholder="Heavy, Two-Handed">
+                                                    </div>
+
+                                                </div>
+                                                
+                                                <div>
+                                                    <label for="weapon-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
+                                                    <textarea id="weapon-notes" class="inventory-form-field resize-none h-24" placeholder="Brief flavor or special rules..."></textarea>
+                                                </div>
+                                                
+                                                <div class="flex justify-end">
+                                                    <button id="add-weapon-button"
+                                                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
+                                                        onclick="addNewWeapon()">
+                                                        Add Weapon to Inventory
+                                                    </button>
                                                 </div>
                                             </div>
+                                            <div id="armor-form-container" class="space-y-4 hidden">
+                                                <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Armor Details</h4>
+                                                
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label for="armor-name" class="block text-sm font-semibold text-gray-400 mb-1">Armor Name</label>
+                                                        <input type="text" id="armor-name" class="inventory-form-field" placeholder="Plate Armor">
+                                                    </div>
+                                                    <div>
+                                                        <label for="armor-type" class="block text-sm font-semibold text-gray-400 mb-1">Armor Type</label>
+                                                        <select id="armor-type" class="inventory-form-field">
+                                                            <option value="Light">Light</option>
+                                                            <option value="Medium">Medium</option>
+                                                            <option value="Heavy">Heavy</option>
+                                                            <option value="Shield">Shield</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label for="armor-ac" class="block text-sm font-semibold text-gray-400 mb-1">Base AC</label>
+                                                        <input type="number" id="armor-ac" class="inventory-form-field" placeholder="18">
+                                                    </div>
+                                                    <div>
+                                                        <label for="armor-max-dex" class="block text-sm font-semibold text-gray-400 mb-1">Max Dex Bonus (e.g., 2)</label>
+                                                        <input type="number" id="armor-max-dex" class="inventory-form-field" placeholder="0 or 2" value="0">
+                                                    </div>
+                                                    <div>
+                                                        <label for="armor-is-proficient" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
+                                                        <select id="armor-is-proficient" class="inventory-form-field">
+                                                            <option value="Yes">Yes</option>
+                                                            <option value="No">No</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label for="armor-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
+                                                        <input type="number" id="armor-weight" class="inventory-form-field" placeholder="60">
+                                                    </div>
+                                                    <div>
+                                                        <label for="armor-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
+                                                        <input type="number" id="armor-cost" class="inventory-form-field" placeholder="1500">
+                                                    </div>
+                                                    <div>
+                                                        <label for="armor-stealth-disadvantage" class="block text-sm font-semibold text-gray-400 mb-1">Stealth Disadvantage?</label>
+                                                        <select id="armor-stealth-disadvantage" class="inventory-form-field">
+                                                            <option value="No">No</option>
+                                                            <option value="Yes">Yes</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div>
+                                                    <label for="armor-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
+                                                    <textarea id="armor-notes" class="inventory-form-field resize-none h-24" placeholder="Special enchantments or properties..."></textarea>
+                                                </div>
+                                                
+                                                <div class="flex justify-end">
+                                                    <button id="add-armor-button"
+                                                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
+                                                        onclick="addNewArmor()">
+                                                        Add Armor to Inventory
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="other-form-placeholder" class="text-gray-500 text-center py-4 hidden">
+                                                </div>
 
-                                            <div>
-                                                <label for="weapon-reach" class="block text-sm font-semibold text-gray-400 mb-1">Reach/Range (ft)</label>
-                                                <input type="number" id="weapon-reach" class="inventory-form-field" placeholder="5">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
-                                                <input type="number" id="weapon-weight" class="inventory-form-field" placeholder="10">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
-                                                <input type="number" id="weapon-cost" class="inventory-form-field" placeholder="50">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-properties" class="block text-sm font-semibold text-gray-400 mb-1">Properties (Comma Separated)</label>
-                                                <input type="text" id="weapon-properties" class="inventory-form-field" placeholder="Heavy, Two-Handed">
+                                        </div>
+                                        <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3 mt-8">Items in Inventory</h3>
+                                        
+                                        <div id="inventory-list-container" class="space-y-4">
                                             </div>
 
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="weapon-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
-                                            <textarea id="weapon-notes" class="inventory-form-field resize-none h-24" placeholder="Brief flavor or special rules..."></textarea>
-                                        </div>
-                                        
-                                        <div class="flex justify-end">
-                                            <button id="add-weapon-button"
-                                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                                                onclick="addNewWeapon()">
-                                                Add Weapon to Inventory
-                                            </button>
-                                        </div>
                                     </div>
-                                    <div id="armor-form-container" class="space-y-4 hidden">
-                                        <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Armor Details</h4>
-                                        
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="armor-name" class="block text-sm font-semibold text-gray-400 mb-1">Armor Name</label>
-                                                <input type="text" id="armor-name" class="inventory-form-field" placeholder="Plate Armor">
-                                            </div>
-                                            <div>
-                                                <label for="armor-type" class="block text-sm font-semibold text-gray-400 mb-1">Armor Type</label>
-                                                <select id="armor-type" class="inventory-form-field">
-                                                    <option value="Light">Light</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="Heavy">Heavy</option>
-                                                    <option value="Shield">Shield</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="armor-ac" class="block text-sm font-semibold text-gray-400 mb-1">Base AC</label>
-                                                <input type="number" id="armor-ac" class="inventory-form-field" placeholder="18">
-                                            </div>
-                                            <div>
-                                                <label for="armor-max-dex" class="block text-sm font-semibold text-gray-400 mb-1">Max Dex Bonus (e.g., 2)</label>
-                                                <input type="number" id="armor-max-dex" class="inventory-form-field" placeholder="0 or 2" value="0">
-                                            </div>
-                                            <div>
-                                                <label for="armor-is-proficient" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
-                                                <select id="armor-is-proficient" class="inventory-form-field">
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="armor-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
-                                                <input type="number" id="armor-weight" class="inventory-form-field" placeholder="60">
-                                            </div>
-                                            <div>
-                                                <label for="armor-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
-                                                <input type="number" id="armor-cost" class="inventory-form-field" placeholder="1500">
-                                            </div>
-                                            <div>
-                                                <label for="armor-stealth-disadvantage" class="block text-sm font-semibold text-gray-400 mb-1">Stealth Disadvantage?</label>
-                                                <select id="armor-stealth-disadvantage" class="inventory-form-field">
-                                                    <option value="No">No</option>
-                                                    <option value="Yes">Yes</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="armor-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
-                                            <textarea id="armor-notes" class="inventory-form-field resize-none h-24" placeholder="Special enchantments or properties..."></textarea>
-                                        </div>
-                                        
-                                        <div class="flex justify-end">
-                                            <button id="add-armor-button"
-                                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                                                onclick="addNewArmor()">
-                                                Add Armor to Inventory
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="other-form-placeholder" class="text-gray-500 text-center py-4 hidden">
-                                        </div>
-
                                 </div>
-                                <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3 mt-8">Items in Inventory</h3>
-                                
-                                <div id="inventory-list-container" class="space-y-4">
-                                    </div>
-
                             </div>
-                        </div>
-                    </div>
-                    <div id="page-notes" class="page-content hidden">
-                        <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2 class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Campaign Notes</h2>
-                            <textarea id="notes-content-textarea"
-                                class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
-                                placeholder="Write down quest objectives, NPC names, campaign secrets, and loot here. This data is saved to the cloud!"></textarea>
-                        </div>
-                    </div>
-                </div> 
-                
-                <nav id="main-navigation"
-                    class="grid grid-cols-6 gap-2 bg-gray-800 rounded-b-lg p-2 shadow-lg border-t-4 border-gray-700">
-                    <button data-page="page-main"
-                        class="nav-button active font-bold text-center p-3 rounded-lg">Main</button>
-                    <button data-page="page-actions"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Actions</button>
-                    <button data-page="page-features"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Features</button>
-                    <button data-page="page-background"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Background</button>
-                    <button data-page="page-inventory"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Inventory</button>
-                    <button data-page="page-notes"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Notes</button>
-                </nav>
+                            <div id="page-notes" class="page-content hidden">
+                                <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+                                    <h2 class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Campaign Notes</h2>
+                                    <textarea id="notes-content-textarea"
+                                        class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
+                                        placeholder="Write down quest objectives, NPC names, campaign secrets, and loot here. This data is saved to the cloud!"></textarea>
+                                </div>
+                            </div>
+                        </div> 
+                        
+                        <nav id="main-navigation"
+                            class="grid grid-cols-6 gap-2 bg-gray-800 rounded-b-lg p-2 shadow-lg border-t-4 border-gray-700">
+                            <button data-page="page-main"
+                                class="nav-button active font-bold text-center p-3 rounded-lg">Main</button>
+                            <button data-page="page-actions"
+                                class="nav-button font-bold text-center p-3 rounded-lg">Actions</button>
+                            <button data-page="page-features"
+                                class="nav-button font-bold text-center p-3 rounded-lg">Features</button>
+                            <button data-page="page-background"
+                                class="nav-button font-bold text-center p-3 rounded-lg">Background</button>
+                            <button data-page="page-inventory"
+                                class="nav-button font-bold text-center p-3 rounded-lg">Inventory</button>
+                            <button data-page="page-notes"
+                                class="nav-button font-bold text-center p-3 rounded-lg">Notes</button>
+                        </nav>
 
-            </div> </div> 
+                    </div> 
+                </div> 
     </div> 
     
-   <script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script>
     
 </body>
 
 </html>
-
-</div> <div id="page-actions" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-
-                            <div
-                                class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 pb-3 mb-4">
-                                <h2 class="text-3xl font-bold text-yellow-400">Actions</h2>
-                               <div class="flex items-center space-x-2 w-full sm:w-auto mt-3 sm:mt-0">
-                                    <button id="action-history-back" class="hp-mod-button roll-history-button" disabled>&lt;</button>
-                                    <button id="action-history-forward" class="hp-mod-button roll-history-button" disabled>&gt;</button>
-                                    <div id="action-roll-display"
-                                        class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono w-full min-h-[40px]">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-8">
-
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Actions</h3>
-                                    <div class="space-y-4" id="actions-list">
-                                        </div>
-                                </div>
-
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Bonus Actions</h3>
-                                    <div class="space-y-4" id="bonus-actions-list">
-                                        </div> 
-                                </div> 
-                                
-                                <div>
-                                    <h3
-                                        class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
-                                        Other</h3>
-                                    <div class="space-y-4" id="other-actions-list">
-                                        </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="page-features" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Features & Traits</h2>
-
-                            <div id="features-container" class="space-y-8">
-                                </div>
-                        </div>
-                    </div>
-                    <div id="page-background" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Background
-                            </h2>
-                            
-                            <div class="space-y-6">
-
-                                <div class="feature-card rounded-lg p-6">
-                                    <h3 id="background-name" class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Background Name</h3>
-                                    
-                                    <div class="space-y-4">
-                                        <div>
-                                            <h4 id="background-feature-name" class="text-xl font-bold text-white">Feature: Feature Name</h4>
-                                            <p id="background-feature-desc" class="text-sm text-gray-300 mt-2">
-                                                Feature description will load here.
-                                            </p>
-                                        </div>
-                                        
-                                        <div class="border-t border-gray-600 pt-4">
-                                            <h4 class="text-xl font-bold text-white mb-3">Characteristics</h4>
-                                            <div id="characteristics-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                                </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="feature-card rounded-lg p-6">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">Origin Story</h3>
-                                    <textarea id="origin-story-textarea"
-                                        class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
-                                        placeholder="Write your character's origin story here. This data is saved to the cloud!"></textarea>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div id="page-inventory" class="page-content hidden">
-                        <div
-                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2
-                                class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
-                                Inventory
-                            </h2>
-
-                                <div class="bg-gray-900 rounded-lg p-6 border border-gray-700 shadow-md">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2 mb-4">Coinage</h3>
-
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#e5e4e2' stroke='#ffffff' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>P</text></svg>
-                                                Platinum (pp)
-                                            </div>
-                                            <div id="coin-pp-display" class="text-3xl font-bold text-gray-200 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#ffd700' stroke='#ccaa00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>G</text></svg>
-                                                Gold (gp)
-                                            </div>
-                                            <div id="coin-gp-display" class="text-3xl font-bold text-yellow-400 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b8860b' stroke='#7e5c00' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>E</text></svg>
-                                                Electrum (ep)
-                                            </div>
-                                            <div id="coin-ep-display" class="text-3xl font-bold text-yellow-600 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#c0c0c0' stroke='#a0a0a0' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#000000' text-anchor='middle' font-weight='bold'>S</text></svg>
-                                                Silver (sp)
-                                            </div>
-                                            <div id="coin-sp-display" class="text-3xl font-bold text-gray-400 mt-1">0</div>
-                                        </div>
-                                        
-                                        <div class="flex flex-col items-center p-3 rounded-lg bg-gray-800 border border-gray-700">
-                                            <div class="text-sm font-semibold uppercase text-gray-400 flex items-center">
-                                                <svg class='w-6 h-6 mr-2 flex-shrink-0' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><circle cx='12' cy='12' r='10' fill='#b87333' stroke='#8d5622' stroke-width='1.5'/><text x='12' y='15' font-family='Arial, sans-serif' font-size='12' fill='#ffffff' text-anchor='middle' font-weight='bold'>C</text></svg>
-                                                Copper (cp)
-                                            </div>
-                                            <div id="coin-cp-display" class="text-3xl font-bold text-red-700 mt-1">0</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="space-y-4 pt-4 border-t border-gray-700">
-                                        <h4 class="text-xl font-bold text-white">Adjust Coinage</h4>
-                                        
-                                        <div class="grid grid-cols-5 gap-3">
-                                            <input type="number" id="coin-pp-input" class="inventory-form-field text-center" placeholder="pp" value="0">
-                                            <input type="number" id="coin-gp-input" class="inventory-form-field text-center" placeholder="gp" value="0">
-                                            <input type="number" id="coin-ep-input" class="inventory-form-field text-center" placeholder="ep" value="0">
-                                            <input type="number" id="coin-sp-input" class="inventory-form-field text-center" placeholder="sp" value="0">
-                                            <input type="number" id="coin-cp-input" class="inventory-form-field text-center" placeholder="cp" value="0">
-                                        </div>
-
-                                        <div class="flex justify-between space-x-2">
-                                            <button id="coin-add-button" class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 flex-grow">
-                                                + ADD
-                                            </button>
-                                            <button id="coin-remove-button" class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 flex-grow">
-                                                - REMOVE
-                                            </button>
-                                            <button id="coin-clear-button" class="action-roll-button bg-gray-600 hover:bg-gray-700 border-gray-500">
-                                                x CLEAR
-                                            </button>
-                                        </div>
-
-                                        <p class="text-xs text-gray-500 text-center mt-3">
-                                            Conversions: 1 pp = 10 gp | 1 gp = 2 ep = 10 sp | 1 sp = 10 cp
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="space-y-6">
-                                
-                                <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md space-y-4">
-                                    <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-700 pb-2">Add New Item</h3>
-                                    
-                                    <div>
-                                        <label for="item-type-select" class="block text-sm font-semibold text-gray-400 mb-1">Item Type</label>
-                                        <select id="item-type-select" class="inventory-form-field w-full" onchange="handleInventoryFormChange(this.value)">
-                                            <option value="">— Select Item Type —</option>
-                                            <option value="Weapon">Weapon</option>
-                                            <option value="Armor">Armor</option>
-                                            <option value="Other">Other Equipment</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div id="weapon-form-container" class="space-y-4 hidden">
-                                        <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Weapon Details</h4>
-                                        
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="weapon-name" class="block text-sm font-semibold text-gray-400 mb-1">Weapon Name</label>
-                                                <input type="text" id="weapon-name" class="inventory-form-field" placeholder="Dwarf-Forged Hammer">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-proficiency" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
-                                                <select id="weapon-proficiency" class="inventory-form-field">
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="weapon-attack-type" class="block text-sm font-semibold text-gray-400 mb-1">Attack Type</label>
-                                                <select id="weapon-attack-type" class="inventory-form-field">
-                                                    <option value="Melee">Melee</option>
-                                                    <option value="Ranged">Ranged</option>
-                                                </select>
-                                            </div>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <label for="weapon-damage" class="block text-sm font-semibold text-gray-400 mb-1">Damage (Dice String)</label>
-                                                    <input type="text" id="weapon-damage" class="inventory-form-field" placeholder="2d6">
-                                                </div>
-                                                <div>
-                                                    <label for="weapon-damage-type" class="block text-sm font-semibold text-gray-400 mb-1">Damage Type</label>
-                                                    <select id="weapon-damage-type" class="inventory-form-field">
-                                                        <option value="Bludgeoning">Bludgeoning</option>
-                                                        <option value="Piercing">Piercing</option>
-                                                        <option value="Slashing">Slashing</option>
-                                                        <option value="Fire">Fire</option>
-                                                        <option value="Cold">Cold</option>
-                                                        <option value="Poison">Poison</option>
-                                                        </select>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label for="weapon-reach" class="block text-sm font-semibold text-gray-400 mb-1">Reach/Range (ft)</label>
-                                                <input type="number" id="weapon-reach" class="inventory-form-field" placeholder="5">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
-                                                <input type="number" id="weapon-weight" class="inventory-form-field" placeholder="10">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
-                                                <input type="number" id="weapon-cost" class="inventory-form-field" placeholder="50">
-                                            </div>
-                                            <div>
-                                                <label for="weapon-properties" class="block text-sm font-semibold text-gray-400 mb-1">Properties (Comma Separated)</label>
-                                                <input type="text" id="weapon-properties" class="inventory-form-field" placeholder="Heavy, Two-Handed">
-                                            </div>
-
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="weapon-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
-                                            <textarea id="weapon-notes" class="inventory-form-field resize-none h-24" placeholder="Brief flavor or special rules..."></textarea>
-                                        </div>
-                                        
-                                        <div class="flex justify-end">
-                                            <button id="add-weapon-button"
-                                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                                                onclick="addNewWeapon()">
-                                                Add Weapon to Inventory
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="armor-form-container" class="space-y-4 hidden">
-                                        <h4 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Armor Details</h4>
-                                        
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="armor-name" class="block text-sm font-semibold text-gray-400 mb-1">Armor Name</label>
-                                                <input type="text" id="armor-name" class="inventory-form-field" placeholder="Plate Armor">
-                                            </div>
-                                            <div>
-                                                <label for="armor-type" class="block text-sm font-semibold text-gray-400 mb-1">Armor Type</label>
-                                                <select id="armor-type" class="inventory-form-field">
-                                                    <option value="Light">Light</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="Heavy">Heavy</option>
-                                                    <option value="Shield">Shield</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="armor-ac" class="block text-sm font-semibold text-gray-400 mb-1">Base AC</label>
-                                                <input type="number" id="armor-ac" class="inventory-form-field" placeholder="18">
-                                            </div>
-                                            <div>
-                                                <label for="armor-max-dex" class="block text-sm font-semibold text-gray-400 mb-1">Max Dex Bonus (e.g., 2)</label>
-                                                <input type="number" id="armor-max-dex" class="inventory-form-field" placeholder="0 or 2" value="0">
-                                            </div>
-                                            <div>
-                                                <label for="armor-is-proficient" class="block text-sm font-semibold text-gray-400 mb-1">Proficiency</label>
-                                                <select id="armor-is-proficient" class="inventory-form-field">
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="armor-weight" class="block text-sm font-semibold text-gray-400 mb-1">Weight (lb.)</label>
-                                                <input type="number" id="armor-weight" class="inventory-form-field" placeholder="60">
-                                            </div>
-                                            <div>
-                                                <label for="armor-cost" class="block text-sm font-semibold text-gray-400 mb-1">Cost (gp)</label>
-                                                <input type="number" id="armor-cost" class="inventory-form-field" placeholder="1500">
-                                            </div>
-                                            <div>
-                                                <label for="armor-stealth-disadvantage" class="block text-sm font-semibold text-gray-400 mb-1">Stealth Disadvantage?</label>
-                                                <select id="armor-stealth-disadvantage" class="inventory-form-field">
-                                                    <option value="No">No</option>
-                                                    <option value="Yes">Yes</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        <div>
-                                            <label for="armor-notes" class="block text-sm font-semibold text-gray-400 mb-1">Notes & Description</label>
-                                            <textarea id="armor-notes" class="inventory-form-field resize-none h-24" placeholder="Special enchantments or properties..."></textarea>
-                                        </div>
-                                        
-                                        <div class="flex justify-end">
-                                            <button id="add-armor-button"
-                                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                                                onclick="addNewArmor()">
-                                                Add Armor to Inventory
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div id="other-form-placeholder" class="text-gray-500 text-center py-4 hidden">
-                                        </div>
-
-                                </div>
-                                <h3 class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3 mt-8">Items in Inventory</h3>
-                                
-                                <div id="inventory-list-container" class="space-y-4">
-                                    </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div id="page-notes" class="page-content hidden">
-                        <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
-                            <h2 class="text-3xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Campaign Notes</h2>
-                            <textarea id="notes-content-textarea"
-                                class="w-full h-96 bg-gray-900 text-gray-200 p-4 rounded-lg border border-gray-700 focus:ring-yellow-500 focus:border-yellow-500 resize-none placeholder-gray-500"
-                                placeholder="Write down quest objectives, NPC names, campaign secrets, and loot here. This data is saved to the cloud!"></textarea>
-                        </div>
-                    </div>
+</div> 
                 </div> 
-                
-                <nav id="main-navigation"
-                    class="grid grid-cols-6 gap-2 bg-gray-800 rounded-b-lg p-2 shadow-lg border-t-4 border-gray-700">
-                    <button data-page="page-main"
-                        class="nav-button active font-bold text-center p-3 rounded-lg">Main</button>
-                    <button data-page="page-actions"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Actions</button>
-                    <button data-page="page-features"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Features</button>
-                    <button data-page="page-background"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Background</button>
-                    <button data-page="page-inventory"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Inventory</button>
-                    <button data-page="page-notes"
-                        class="nav-button font-bold text-center p-3 rounded-lg">Notes</button>
-                </nav>
-
-            </div> </div> 
     </div> 
     
-   <script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script>
     
 </body>
 

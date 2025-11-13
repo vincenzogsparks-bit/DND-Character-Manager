@@ -55,6 +55,22 @@ function getDefaultInventory() {
     return [];
 }
 
+// *** NEW: CLASS-TO-SAVING-THROW MAPPING (For Next Goal) ***
+const CLASS_TO_SAVES = {
+    "Barbarian": ["str", "con"],
+    "Bard": ["dex", "cha"],
+    "Cleric": ["wis", "cha"],
+    "Druid": ["int", "wis"],
+    "Fighter": ["str", "con"],
+    "Monk": ["str", "dex"],
+    "Paladin": ["wis", "cha"],
+    "Ranger": ["str", "dex"],
+    "Rogue": ["dex", "int"],
+    "Sorcerer": ["con", "cha"],
+    "Warlock": ["wis", "cha"],
+    "Wizard": ["int", "wis"],
+    "Unknown": []
+};
 
 // Consolidated local state object (synced with Firestore)
 // This now acts as a *template* or *default* for a new character
@@ -1690,6 +1706,25 @@ function calculateMaxHp() {
     }
 }
 
+/**
+ * NEW: Handles auto-checking the correct Saving Throw proficiencies based on the selected Class.
+ */
+function handleClassChange() {
+    const selectedClass = ELEMENTS.createCharClass.value;
+    const savesToProf = CLASS_TO_SAVES[selectedClass] || [];
+    
+    // Iterate over all possible saving throws
+    const allSaves = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    
+    allSaves.forEach(save => {
+        const checkbox = document.getElementById(`create-save-prof-${save}`);
+        if (checkbox) {
+            // Check the box if the save is in the array for the selected class, otherwise uncheck it.
+            checkbox.checked = savesToProf.includes(save);
+        }
+    });
+}
+
 
 /**
  * NEW: Reads all data from the creator form and returns a new character data object.
@@ -1772,23 +1807,27 @@ function getCharacterDataFromForm() {
         
         // Features (simple storage, logic will be in Phase 4)
         features: {
-            fightingStyle: ELEMENTS.createFightingStyle.value,
-            feat1: ELEMENTS.createFeat1.value,
-            feat2: ELEMENTS.createFeat2.value,
+            // FIX: These fields don't exist in index.html yet, commenting out for stability
+            // fightingStyle: ELEMENTS.createFightingStyle.value, 
+            // feat1: ELEMENTS.createFeat1.value,
+            // feat2: ELEMENTS.createFeat2.value,
             runes: {
-                fire: ELEMENTS.createRuneFire.checked,
-                cloud: ELEMENTS.createRuneCloud.checked,
-                frost: ELEMENTS.createRuneFrost.checked,
-                stone: ELEMENTS.createRuneStone.checked,
-                hill: ELEMENTS.createRuneHill.checked,
+                // fire: ELEMENTS.createRuneFire.checked, 
+                // cloud: ELEMENTS.createRuneCloud.checked,
+                // frost: ELEMENTS.createRuneFrost.checked,
+                // stone: ELEMENTS.createRuneStone.checked,
+                // hill: ELEMENTS.createRuneHill.checked,
             }
         },
         
-        // Background
+        // Background (These fields don't exist in index.html yet, commenting out for stability)
         background: {
-            name: ELEMENTS.createBackgroundName.value || "Unknown",
-            feature: ELEMENTS.createBackgroundFeature.value || "None",
-            story: ELEMENTS.createBackgroundStory.value || "",
+            // name: ELEMENTS.createBackgroundName.value || "Unknown",
+            // feature: ELEMENTS.createBackgroundFeature.value || "None",
+            // story: ELEMENTS.createBackgroundStory.value || "",
+            name: "Unknown",
+            feature: "None",
+            story: "",
         },
     };
     
@@ -1867,27 +1906,14 @@ function populateCreateForm() {
         if (el) el.checked = isProf;
     }
     
-    // Features
-    ELEMENTS.createFightingStyle.value = state.features.fightingStyle || 'None';
-    ELEMENTS.createFeat1.value = state.features.feat1 || 'None';
-    ELEMENTS.createFeat2.value = state.features.feat2 || 'None';
+    // Features - Skip populating fields that don't exist in HTML yet
     
-    // Runes
-    if (state.features.runes) {
-        ELEMENTS.createRuneFire.checked = state.features.runes.fire || false;
-        ELEMENTS.createRuneCloud.checked = state.features.runes.cloud || false;
-        ELEMENTS.createRuneFrost.checked = state.features.runes.frost || false;
-        ELEMENTS.createRuneStone.checked = state.features.runes.stone || false;
-        ELEMENTS.createRuneHill.checked = state.features.runes.hill || false;
-    }
-    
-    // Background
-    ELEMENTS.createBackgroundName.value = state.background.name;
-    ELEMENTS.createBackgroundFeature.value = state.background.feature;
-    ELEMENTS.createBackgroundStory.value = state.background.story;
+    // Background - Skip populating fields that don't exist in HTML yet
 
     // Call the live update function to initialize the modifier displays AND calculate HP
     updateAllCreationStats();
+    // After populating the class, trigger the save auto-selection
+    handleClassChange(); 
 }
 
 /**
@@ -1897,7 +1923,7 @@ function clearCreateForm() {
     // Vitals
     ELEMENTS.createCharName.value = '';
     ELEMENTS.createCharRace.value = '';
-    ELEMENTS.createCharClass.value = '';
+    ELEMENTS.createCharClass.value = 'Unknown'; // Default the dropdown
     ELEMENTS.createCharLevel.value = 1;
     
     // Scores
@@ -1916,18 +1942,11 @@ function clearCreateForm() {
     // Save Proficiencies
     document.querySelectorAll('#page-character-creation input[type="checkbox"]').forEach(el => el.checked = false);
     
-    // Features
-    ELEMENTS.createFightingStyle.value = 'None';
-    ELEMENTS.createFeat1.value = 'None';
-    ELEMENTS.createFeat2.value = 'None';
+    // Features/Background - Skipping non-existent elements
     
-    // Background
-    ELEMENTS.createBackgroundName.value = '';
-    ELEMENTS.createBackgroundFeature.value = '';
-    ELEMENTS.createBackgroundStory.value = '';
-
     // Reset modifier displays AND calculate initial HP
     updateAllCreationStats();
+    handleClassChange(); // Clear/Reset saving throws based on 'Unknown' class
 }
 
 /**
@@ -2044,7 +2063,7 @@ async function handleSaveOrUpdateCharacter() {
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- *** BEGINNING OF FIX (Updated with new Modifier IDs) *** ---
+    // --- *** BEGINNING OF CRITICAL FIX (Corrected document.getElementById syntax) *** ---
     ELEMENTS = {
         // Splash & Main
         splashScreen: document.getElementById('splash-screen'),
@@ -2099,7 +2118,6 @@ document.addEventListener('DOMContentLoaded', () => {
         skillHistoryForward: document.getElementById('skill-history-forward'),
         saveHistoryBack: document.getElementById('save-history-back'),
         saveHistoryForward: document.getElementById('save-history-forward'),
-        // FIX: Replaced "document(" with "document.getElementById("
         actionHistoryBack: document.getElementById('action-history-back'), 
         actionHistoryForward: document.getElementById('action-history-forward'),
         
@@ -2117,7 +2135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         coinPpInput: document.getElementById('coin-pp-input'),
         coinGpInput: document.getElementById('coin-gp-input'),
         coinEpInput: document.getElementById('coin-ep-input'),
-        coinSpInput: document('coin-sp-input'),
+        coinSpInput: document.getElementById('coin-sp-input'), // <<< CRITICAL FIX APPLIED
         coinCpInput: document.getElementById('coin-cp-input'),
         coinAddButton: document.getElementById('coin-add-button'),
         coinRemoveButton: document.getElementById('coin-remove-button'),
@@ -2166,12 +2184,12 @@ document.addEventListener('DOMContentLoaded', () => {
         createScoreInt: document.getElementById('create-score-int'),
         createScoreWis: document.getElementById('create-score-wis'),
         createScoreCha: document.getElementById('create-score-cha'),
-        createModStr: document.getElementById('create-mod-str'), // NEW
-        createModDex: document.getElementById('create-mod-dex'), // NEW
-        createModCon: document.getElementById('create-mod-con'), // NEW
-        createModInt: document.getElementById('create-mod-int'), // NEW
-        createModWis: document.getElementById('create-mod-wis'), // NEW
-        createModCha: document.getElementById('create-mod-cha'), // NEW
+        createModStr: document.getElementById('create-mod-str'), 
+        createModDex: document.getElementById('create-mod-dex'), 
+        createModCon: document.getElementById('create-mod-con'), 
+        createModInt: document.getElementById('create-mod-int'), 
+        createModWis: document.getElementById('create-mod-wis'), 
+        createModCha: document.getElementById('create-mod-cha'), 
         createMaxHp: document.getElementById('create-max-hp'),
         createAc: document.getElementById('create-ac'),
         createSpeed: document.getElementById('create-speed'),
@@ -2199,19 +2217,9 @@ document.addEventListener('DOMContentLoaded', () => {
         createSkillProfSleightOfHand: document.getElementById('create-skill-prof-sleightofhand'),
         createSkillProfStealth: document.getElementById('create-skill-prof-stealth'),
         createSkillProfSurvival: document.getElementById('create-skill-prof-survival'),
-        createFightingStyle: document.getElementById('create-fighting-style'),
-        createFeat1: document.getElementById('create-feat-1'),
-        createFeat2: document.getElementById('create-feat-2'),
-        createRuneFire: document.getElementById('create-rune-fire'),
-        createRuneCloud: document.getElementById('create-rune-cloud'),
-        createRuneFrost: document.getElementById('create-rune-frost'),
-        createRuneStone: document.getElementById('create-rune-stone'),
-        createRuneHill: document.getElementById('create-rune-hill'),
-        createBackgroundName: document.getElementById('create-background-name'),
-        createBackgroundFeature: document.getElementById('create-background-feature'),
-        createBackgroundStory: document.getElementById('create-background-story'),
+        // Omitting non-existent feature/background elements for stability
     };
-    // --- *** END OF FIX *** ---
+    // --- *** END OF CRITICAL FIX *** ---
     
     
     // --- ATTACH EVENT LISTENERS (Optimized using ELEMENT references) ---
@@ -2240,8 +2248,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // *** NEW: Edit Character Button ***
-    ELEMENTS.editCharacterButton.addEventListener('click', handleEditCharacter);
+    // *** NEW: Edit Character Button (If this element exists, we attach the listener) ***
+    if (ELEMENTS.editCharacterButton) ELEMENTS.editCharacterButton.addEventListener('click', handleEditCharacter);
     
     // *** MODIFIED: Save Character Button ***
     // This one button now handles both creating and updating
@@ -2256,16 +2264,16 @@ document.addEventListener('DOMContentLoaded', () => {
     ELEMENTS.actionHistoryForward.addEventListener('click', () => handleHistoryNavigation('action', 'forward'));
 
     // Character Sheet Listeners
-    ELEMENTS.longRestButton.addEventListener('click', handleLongRest);
-    ELEMENTS.shortRestButton.addEventListener('click', handleShortRest);
+    if (ELEMENTS.longRestButton) ELEMENTS.longRestButton.addEventListener('click', handleLongRest);
+    if (ELEMENTS.shortRestButton) ELEMENTS.shortRestButton.addEventListener('click', handleShortRest);
     
     // Coinage Action Buttons
     ELEMENTS.coinAddButton.addEventListener('click', handleCoinAdd);
     ELEMENTS.coinRemoveButton.addEventListener('click', handleCoinRemove);
     ELEMENTS.coinClearButton.addEventListener('click', handleCoinClear);
 
-    ELEMENTS.hpPlusButton.addEventListener('click', handleHpPlus);
-    ELEMENTS.hpMinusButton.addEventListener('click', handleHpMinus);
+    if (ELEMENTS.hpPlusButton) ELEMENTS.hpPlusButton.addEventListener('click', handleHpPlus);
+    if (ELEMENTS.hpMinusButton) ELEMENTS.hpMinusButton.addEventListener('click', handleHpMinus);
     
     // The addWeaponButton and addNewArmor buttons call functions directly via onclick in HTML
     
@@ -2336,9 +2344,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // *** END NEW ***
     });
     
+    // *** NEW: Class Change Listener (For Saving Throw Auto-Selection) ***
+    ELEMENTS.createCharClass.addEventListener('change', handleClassChange);
+    
     // Textarea listeners (Debounced for performance)
-    ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
-    ELEMENTS.originStoryTextarea.addEventListener('input', debouncedOriginStoryChange);
+    if (ELEMENTS.notesTextarea) ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
+    if (ELEMENTS.originStoryTextarea) ELEMENTS.originStoryTextarea.addEventListener('input', debouncedOriginStoryChange);
     
     // --- SET INITIAL UI STATE ---
     
