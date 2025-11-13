@@ -120,6 +120,11 @@ body {
     /* Dark gray */
     border: 1px solid #4a5568;
     /* Medium gray border */
+    min-height: 120px; /* <---- FIX: Ensure minimum height for ability scores in creation/sheet */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .stat-block .modifier {

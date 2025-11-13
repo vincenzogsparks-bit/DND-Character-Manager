@@ -714,6 +714,7 @@ async function initializePersistence() {
         }
     }
 }
+
 // --- CURRENCY HANDLER FUNCTIONS (NEW) ---
 
 /**
@@ -1229,6 +1230,7 @@ function handleHistoryNavigation(type, direction) {
         updateHistoryDisplay('action');
     }
 }
+
 // --- ROLL LOGIC (Modified) ---
 
 function rollD20() { return Math.floor(Math.random() * 20) + 1; }
@@ -1644,6 +1646,52 @@ function calculateProficiencyBonus(level) {
 }
 
 /**
+ * NEW: Calculates Max HP based on Level and CON modifier. (Fighter/d10 Hit Die assumption)
+ */
+function calculateMaxHp() {
+    const level = parseInt(ELEMENTS.createCharLevel.value) || 1;
+    const conScore = parseInt(ELEMENTS.createScoreCon.value) || 10;
+    const conModifier = calculateModifier(conScore);
+    
+    let maxHp = 0;
+    
+    if (level === 1) {
+        // Level 1: Max Hit Die (10 for Fighter) + CON Modifier
+        maxHp = 10 + conModifier;
+    } else {
+        // Level 2+: Previous HP (from current state or previous form save) + (Average Roll (6 for d10) + CON Modifier) for each additional level
+        
+        // This is complex because we don't store "unadjusted" Max HP. 
+        // For simplicity during creation, we'll calculate the *total* from scratch.
+        
+        // HP at Level 1
+        maxHp = 10 + conModifier;
+        
+        // HP gained from levels 2 up to current level
+        const averageRoll = 6; // Standard d10 average for Fighter (5.5 rounded up to 6)
+        const levelsToCount = level - 1;
+        
+        maxHp += levelsToCount * (averageRoll + conModifier);
+    }
+    
+    // Ensure HP is at least 1
+    maxHp = Math.max(1, maxHp);
+
+    // Update the UI field
+    ELEMENTS.createMaxHp.value = maxHp;
+    
+    // Lock the field when the HP is automatically calculated
+    if (level > 0) {
+        ELEMENTS.createMaxHp.setAttribute('readonly', 'true');
+        ELEMENTS.createMaxHp.classList.add('bg-gray-900', 'text-gray-400', 'cursor-not-allowed');
+    } else {
+        ELEMENTS.createMaxHp.removeAttribute('readonly');
+        ELEMENTS.createMaxHp.classList.remove('bg-gray-900', 'text-gray-400', 'cursor-not-allowed');
+    }
+}
+
+
+/**
  * NEW: Reads all data from the creator form and returns a new character data object.
  * This does NOT include data that isn't on the form (like inventory, notes, etc.)
  * @returns {object} A new character data object based on form values.
@@ -1685,7 +1733,7 @@ function getCharacterDataFromForm() {
         modifiers: modifiers,
 
         // Combat Stats
-        maxHp: parseInt(ELEMENTS.createMaxHp.value) || 10,
+        maxHp: parseInt(ELEMENTS.createMaxHp.value) || 10, // Uses the automatically calculated value
         // *** NOTE: We do NOT update currentHp here, only maxHp ***
         baseAc: parseInt(ELEMENTS.createAc.value) || 10,
         speed: parseInt(ELEMENTS.createSpeed.value) || 30,
@@ -1761,6 +1809,12 @@ function updateCreationStatDisplay(scoreId, modId) {
         const modifier = calculateModifier(score);
         const prefix = modifier >= 0 ? '+' : '';
         modDisplay.textContent = `${prefix}${modifier}`;
+        
+        // *** NEW: Trigger HP calculation whenever CON or Level changes ***
+        if (scoreId === 'create-score-con' || scoreId === 'create-char-level') {
+            calculateMaxHp();
+        }
+        // *** END NEW ***
     }
 }
 
@@ -1832,7 +1886,7 @@ function populateCreateForm() {
     ELEMENTS.createBackgroundFeature.value = state.background.feature;
     ELEMENTS.createBackgroundStory.value = state.background.story;
 
-    // Call the live update function to initialize the modifier displays
+    // Call the live update function to initialize the modifier displays AND calculate HP
     updateAllCreationStats();
 }
 
@@ -1872,7 +1926,7 @@ function clearCreateForm() {
     ELEMENTS.createBackgroundFeature.value = '';
     ELEMENTS.createBackgroundStory.value = '';
 
-    // Reset modifier displays
+    // Reset modifier displays AND calculate initial HP
     updateAllCreationStats();
 }
 
@@ -1891,6 +1945,7 @@ function handleEditCharacter() {
     // 3. Show the form page
     showAppPage('page-character-creation');
 }
+
 /**
  * REFACTORED: Now only handles saving a BRAND NEW character.
  */
@@ -2267,13 +2322,15 @@ document.addEventListener('DOMContentLoaded', () => {
             handleHpChange(event);
         }
         
-        // *** NEW: Live Ability Score Modifier Update ***
+        // *** NEW: Live Ability Score Modifier Update AND Max HP Recalculation ***
         const abilityScoreIds = ['create-score-str', 'create-score-dex', 'create-score-con', 'create-score-int', 'create-score-wis', 'create-score-cha'];
         const stat = abilityScoreIds.find(id => event.target.id === id);
         
         if (stat) {
             const modId = stat.replace('score', 'mod');
             updateCreationStatDisplay(stat, modId);
+        } else if (event.target === ELEMENTS.createCharLevel) {
+             calculateMaxHp();
         }
         // *** END NEW ***
     });
