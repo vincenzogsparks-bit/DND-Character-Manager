@@ -216,7 +216,6 @@ const getFirebaseConfig = () => {
 
 
 // --- STATE MANAGEMENT CORE ---
-
 /**
  * Saves the current characterState object to persistence (Firestore or LocalStorage).
  * @param {object} state - The full current state object to save.
@@ -1671,7 +1670,6 @@ function showMainContent() {
 }
 
 // --- *** START OF NEW CHARACTER EDIT/CREATE LOGIC (Phase 4) *** ---
-
 /**
  * Calculates the proficiency bonus for a given level.
  * @param {number} level - The character's level.
@@ -2188,7 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createScoreCon: document.getElementById('create-score-con'),
         createScoreInt: document.getElementById('create-score-int'),
         createScoreWis: document.getElementById('create-score-wis'),
-        createScoreCha: document.getElementById('create-score-cha'),
+        createScoreCha: document.getElementById('create-char-cha'),
         createModStr: document.getElementById('create-mod-str'), 
         createModDex: document.getElementById('create-mod-dex'), 
         createModCon: document.getElementById('create-mod-con'), 
@@ -2228,7 +2226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- ATTACH EVENT LISTENERS (Optimized using ELEMENT references) ---
 
-    // Splash screen
+    // FIX: Add a reliable, explicit listener for the splash screen now that ELEMENTS is defined
     if (ELEMENTS.splashScreen) ELEMENTS.splashScreen.addEventListener('click', showMainContent);
 
     // New App-Level Navigation
@@ -2317,7 +2315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemType = equipButton.dataset.itemType;
             toggleItemEquipStatus(itemId, itemType); 
         }
-        const deleteButton = event.target.closest('.delete-item-btn');
+        const deleteButton = event.closest('.delete-item-btn');
         if (deleteButton) {
             const itemId = deleteButton.dataset.itemId;
             deleteItem(itemId);
