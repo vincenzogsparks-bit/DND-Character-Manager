@@ -1630,6 +1630,10 @@ function handleNavigation(event) {
     const clickedButton = event.target.closest('.nav-button');
     if (!clickedButton) return; 
 
+    // *** MODIFICATION START: Scroll to top for "new page" feel ***
+    window.scrollTo(0, 0);
+    // *** MODIFICATION END ***
+
     const targetPageId = clickedButton.dataset.page;
     
     // Define all internal content page IDs based on the navigation buttons
@@ -1759,7 +1763,6 @@ function handleClassChange() {
         }
     });
 }
-
 
 /**
  * NEW: Reads all data from the creator form and returns a new character data object.
@@ -2207,7 +2210,9 @@ document.addEventListener('DOMContentLoaded', () => {
         createScoreCon: document.getElementById('create-score-con'),
         createScoreInt: document.getElementById('create-score-int'),
         createScoreWis: document.getElementById('create-score-wis'),
-        createScoreCha: document.getElementById('create-char-cha'),
+        // *** MODIFICATION START: Fix typo ***
+        createScoreCha: document.getElementById('create-score-cha'),
+        // *** MODIFICATION END ***
         createModStr: document.getElementById('create-mod-str'), 
         createModDex: document.getElementById('create-mod-dex'), 
         createModCon: document.getElementById('create-mod-con'), 
