@@ -1061,10 +1061,10 @@ function handleShortRest() {
 }
 
 function handleLongRest() {
-    const maxHP = characterState.maxHp;
+    const maxHp = characterState.maxHp;
     
     updateState({
-        currentHp: maxHP,
+        currentHp: maxHp,
         tempHp: 0,
         giantsMightUses: 2,
         isGiantsMightActive: false,
@@ -1096,10 +1096,10 @@ function handleHpChange(event) {
     if (event.target === ELEMENTS.currentHpInput) {
         try {
             newHP = parseInt(ELEMENTS.currentHpInput.value, 10);
-            const maxHP = characterState.maxHp;
+            const maxHp = characterState.maxHp;
 
             if (isNaN(newHP) || newHP < 0) newHP = 0; 
-            if (newHP > maxHP) newHP = maxHP; 
+            if (newHP > maxHp) newHP = maxHp; 
             
             if (newHP !== characterState.currentHp) {
                 updateState({ currentHp: newHP }); 
@@ -1123,9 +1123,9 @@ function handleHpChange(event) {
 
 function handleHpPlus() {
     let newHP = characterState.currentHp + 1;
-    const maxHP = characterState.maxHp;
+    const maxHp = characterState.maxHp;
     
-    if (newHP > maxHP) newHP = maxHP;
+    if (newHP > maxHp) newHP = maxHp;
     
     updateState({ currentHp: newHP });
 }
@@ -2099,7 +2099,7 @@ document.addEventListener('DOMContentLoaded', () => {
         skillHistoryForward: document.getElementById('skill-history-forward'),
         saveHistoryBack: document.getElementById('save-history-back'),
         saveHistoryForward: document.getElementById('save-history-forward'),
-        actionHistoryBack: document.getElementById('action-history-back'),
+        actionHistoryBack: document('action-history-back'),
         actionHistoryForward: document.getElementById('action-history-forward'),
         
         // Actions Page
