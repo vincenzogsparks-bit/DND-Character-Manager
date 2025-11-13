@@ -216,6 +216,7 @@ const getFirebaseConfig = () => {
 
 
 // --- STATE MANAGEMENT CORE ---
+
 /**
  * Saves the current characterState object to persistence (Firestore or LocalStorage).
  * @param {object} state - The full current state object to save.
@@ -1623,7 +1624,7 @@ function showAppPage(pageIdToShow) {
 }
 
 
-// --- CHARACTER SHEET NAVIGATION LOGIC (Unchanged) ---
+// --- CHARACTER SHEET NAVIGATION LOGIC (CRITICAL FIX APPLIED HERE) ---
 
 function handleNavigation(event) {
     const clickedButton = event.target.closest('.nav-button');
@@ -1631,25 +1632,41 @@ function handleNavigation(event) {
 
     const targetPageId = clickedButton.dataset.page;
     
-    // Hide all pages
-    document.querySelectorAll('.page-content').forEach(page => {
-        page.classList.add('hidden');
+    // Define all internal content page IDs based on the navigation buttons
+    const allInternalPages = [
+        'page-main', 
+        'page-actions', 
+        'page-features', 
+        'page-background', 
+        'page-inventory', 
+        'page-notes'
+    ];
+    
+    // 1. Hide ALL internal pages
+    allInternalPages.forEach(pageId => {
+        const page = document.getElementById(pageId);
+        if (page) {
+             page.classList.add('hidden');
+        } else {
+            console.warn(`Internal character sheet page with ID ${pageId} not found.`);
+        }
     });
 
-    // Deactivate all buttons
+    // 2. Deactivate all buttons
     document.querySelectorAll('.nav-button').forEach(button => {
         button.classList.remove('active');
+        // Reset manual style overrides applied by the active class logic
         button.style.borderTopWidth = '4px';
         button.style.borderTopColor = 'transparent';
     });
 
-    // Show the target page
+    // 3. Show the target page
     const targetPage = document.getElementById(targetPageId);
     if (targetPage) {
         targetPage.classList.remove('hidden');
     }
 
-    // Activate the clicked button
+    // 4. Activate the clicked button
     clickedButton.classList.add('active');
     clickedButton.style.borderTopWidth = '4px';
     clickedButton.style.borderTopColor = '#ecc94b'; 
@@ -1670,6 +1687,7 @@ function showMainContent() {
 }
 
 // --- *** START OF NEW CHARACTER EDIT/CREATE LOGIC (Phase 4) *** ---
+
 /**
  * Calculates the proficiency bonus for a given level.
  * @param {number} level - The character's level.
@@ -2315,7 +2333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemType = equipButton.dataset.itemType;
             toggleItemEquipStatus(itemId, itemType); 
         }
-        const deleteButton = event.closest('.delete-item-btn');
+        const deleteButton = event.target.closest('.delete-item-btn');
         if (deleteButton) {
             const itemId = deleteButton.dataset.itemId;
             deleteItem(itemId);
