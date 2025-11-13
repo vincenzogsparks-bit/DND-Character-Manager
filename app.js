@@ -458,45 +458,55 @@ function renderInventory() {
     if (!initialLoadComplete) return; // Don't render if we haven't loaded a character yet
 
     // --- Vitals ---
-    ELEMENTS.charSheetName.textContent = characterState.name;
-    ELEMENTS.charSheetRace.textContent = characterState.race;
-    ELEMENTS.charSheetClassLevel.textContent = `${characterState.class} ${characterState.level}`;
+    if (ELEMENTS.charSheetName) ELEMENTS.charSheetName.textContent = characterState.name;
+    if (ELEMENTS.charSheetRace) ELEMENTS.charSheetRace.textContent = characterState.race;
+    if (ELEMENTS.charSheetClassLevel) ELEMENTS.charSheetClassLevel.textContent = `${characterState.class} ${characterState.level}`;
 
     // --- HP and Textareas ---
-    ELEMENTS.currentHpInput.value = characterState.currentHp;
-    ELEMENTS.maxHpSpan.textContent = characterState.maxHp;
-    ELEMENTS.tempHpInput.value = characterState.tempHp;
-    ELEMENTS.notesTextarea.value = characterState.notesContent;
-    ELEMENTS.originStoryTextarea.value = characterState.background.story || "";
+    if (ELEMENTS.currentHpInput) ELEMENTS.currentHpInput.value = characterState.currentHp;
+    if (ELEMENTS.maxHpSpan) ELEMENTS.maxHpSpan.textContent = characterState.maxHp;
+    if (ELEMENTS.tempHpInput) ELEMENTS.tempHpInput.value = characterState.tempHp;
+    if (ELEMENTS.notesTextarea) ELEMENTS.notesTextarea.value = characterState.notesContent;
+    if (ELEMENTS.originStoryTextarea) ELEMENTS.originStoryTextarea.value = characterState.background.story || "";
     
     // --- Currency Displays ---
-    ELEMENTS.coinPpDisplay.textContent = characterState.platinum;
-    ELEMENTS.coinGpDisplay.textContent = characterState.gold;
-    ELEMENTS.coinEpDisplay.textContent = characterState.electrum;
-    ELEMENTS.coinSpDisplay.textContent = characterState.silver;
-    ELEMENTS.coinCpDisplay.textContent = characterState.copper;
+    if (ELEMENTS.coinPpDisplay) ELEMENTS.coinPpDisplay.textContent = characterState.platinum;
+    if (ELEMENTS.coinGpDisplay) ELEMENTS.coinGpDisplay.textContent = characterState.gold;
+    if (ELEMENTS.coinEpDisplay) ELEMENTS.coinEpDisplay.textContent = characterState.electrum;
+    if (ELEMENTS.coinSpDisplay) ELEMENTS.coinSpDisplay.textContent = characterState.silver;
+    if (ELEMENTS.coinCpDisplay) ELEMENTS.coinCpDisplay.textContent = characterState.copper;
     
     // --- Clear inputs after update ---
-    ELEMENTS.coinPpInput.value = 0;
-    ELEMENTS.coinGpInput.value = 0;
-    ELEMENTS.coinEpInput.value = 0;
-    ELEMENTS.coinSpInput.value = 0;
-    ELEMENTS.coinCpInput.value = 0;
+    if (ELEMENTS.coinPpInput) ELEMENTS.coinPpInput.value = 0;
+    if (ELEMENTS.coinGpInput) ELEMENTS.coinGpInput.value = 0;
+    if (ELEMENTS.coinEpInput) ELEMENTS.coinEpInput.value = 0;
+    if (ELEMENTS.coinSpInput) ELEMENTS.coinSpInput.value = 0;
+    if (ELEMENTS.coinCpInput) ELEMENTS.coinCpInput.value = 0;
 
-    ELEMENTS.portraitImg.src = characterState.characterPortrait || EMBEDDED_PORTRAIT_BASE64;
+    if (ELEMENTS.portraitImg) ELEMENTS.portraitImg.src = characterState.characterPortrait || EMBEDDED_PORTRAIT_BASE64;
 
     // --- Stats & Bonuses ---
     const { scores, modifiers, proficiencyBonus } = characterState;
-    ELEMENTS.charSheetProfBonus.textContent = `+${proficiencyBonus}`;
-    ELEMENTS.charSheetSpeed.textContent = `${characterState.speed} ft.`;
+    if (ELEMENTS.charSheetProfBonus) ELEMENTS.charSheetProfBonus.textContent = `+${proficiencyBonus}`;
+    if (ELEMENTS.charSheetSpeed) ELEMENTS.charSheetSpeed.textContent = `${characterState.speed} ft.`;
 
-    // --- Ability Scores Blocks ---
-    document.getElementById('stat-str').innerHTML = `<div class="modifier">${modifiers.str >= 0 ? '+' : ''}${modifiers.str}</div><div class="score">${scores.str}</div><div class="label mt-1">Strength</div>`;
-    document.getElementById('stat-dex').innerHTML = `<div class="modifier">${modifiers.dex >= 0 ? '+' : ''}${modifiers.dex}</div><div class="score">${scores.dex}</div><div class="label mt-1">Dexterity</div>`;
-    document.getElementById('stat-con').innerHTML = `<div class="modifier">${modifiers.con >= 0 ? '+' : ''}${modifiers.con}</div><div class="score">${scores.con}</div><div class="label mt-1">Constitution</div>`;
-    document.getElementById('stat-int').innerHTML = `<div class="modifier">${modifiers.int >= 0 ? '+' : ''}${modifiers.int}</div><div class="score">${scores.int}</div><div class="label mt-1">Intelligence</div>`;
-    document.getElementById('stat-wis').innerHTML = `<div class="modifier">${modifiers.wis >= 0 ? '+' : ''}${modifiers.wis}</div><div class="score">${scores.wis}</div><div class="label mt-1">Wisdom</div>`;
-    document.getElementById('stat-cha').innerHTML = `<div class="modifier">${modifiers.cha >= 0 ? '+' : ''}${modifiers.cha}</div><div class="score">${scores.cha}</div><div class="label mt-1">Charisma</div>`;
+    // --- Ability Scores Blocks (CRITICAL STABILITY FIX APPLIED HERE) ---
+    const statBlockUpdate = (stat, score, modifier) => {
+        const el = document.getElementById(`stat-${stat}`);
+        if (el) {
+            const prefix = modifier >= 0 ? '+' : '';
+            // Use .toUpperCase() for display label for consistency
+            el.innerHTML = `<div class="modifier">${prefix}${modifier}</div><div class="score">${score}</div><div class="label mt-1">${stat.toUpperCase()}</div>`;
+        }
+    };
+    
+    statBlockUpdate('str', scores.str, modifiers.str);
+    statBlockUpdate('dex', scores.dex, modifiers.dex);
+    statBlockUpdate('con', scores.con, modifiers.con);
+    statBlockUpdate('int', scores.int, modifiers.int);
+    statBlockUpdate('wis', scores.wis, modifiers.wis);
+    statBlockUpdate('cha', scores.cha, modifiers.cha);
+    // ------------------------------------------------------------------
 
     // --- Saving Throws ---
     const saves = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -504,9 +514,12 @@ function renderInventory() {
         const isProf = characterState.saveProficiencies[stat];
         const modifier = modifiers[stat] + (isProf ? proficiencyBonus : 0);
         const el = document.getElementById(`save-${stat}`);
-        el.className = `save-item save-rollable flex justify-between items-center p-3 rounded-lg ${isProf ? 'proficient' : ''}`;
-        el.dataset.modifier = modifier;
-        el.querySelector('.bonus').textContent = `${modifier >= 0 ? '+' : ''}${modifier}`;
+        if (el) {
+             el.className = `save-item save-rollable flex justify-between items-center p-3 rounded-lg ${isProf ? 'proficient' : ''}`;
+             el.dataset.modifier = modifier;
+             const bonusEl = el.querySelector('.bonus');
+             if (bonusEl) bonusEl.textContent = `${modifier >= 0 ? '+' : ''}${modifier}`;
+        }
     });
 
     // --- Skills ---
@@ -522,18 +535,21 @@ function renderInventory() {
         const isProf = characterState.skillProficiencies[skill];
         const modifier = modifiers[stat] + (isProf ? proficiencyBonus : 0);
         const el = document.getElementById(`skill-${skill}`);
-        el.className = `skill-item skill-rollable flex justify-between items-center p-3 rounded-lg ${isProf ? 'proficient' : ''}`;
-        el.dataset.modifier = modifier;
-        el.querySelector('.bonus').textContent = `${modifier >= 0 ? '+' : ''}${modifier}`;
+        if (el) {
+             el.className = `skill-item skill-rollable flex justify-between items-center p-3 rounded-lg ${isProf ? 'proficient' : ''}`;
+             el.dataset.modifier = modifier;
+             const bonusEl = el.querySelector('.bonus');
+             if (bonusEl) bonusEl.textContent = `${modifier >= 0 ? '+' : ''}${modifier}`;
+        }
     }
 
     // --- Senses ---
     const percMod = modifiers.wis + (characterState.skillProficiencies.perception ? proficiencyBonus : 0);
     const invMod = modifiers.int + (characterState.skillProficiencies.investigation ? proficiencyBonus : 0);
     const insMod = modifiers.wis + (characterState.skillProficiencies.insight ? proficiencyBonus : 0);
-    document.getElementById('passive-perception').textContent = 10 + percMod;
-    document.getElementById('passive-investigation').textContent = 10 + invMod;
-    document.getElementById('passive-insight').textContent = 10 + insMod;
+    if (document.getElementById('passive-perception')) document.getElementById('passive-perception').textContent = 10 + percMod;
+    if (document.getElementById('passive-investigation')) document.getElementById('passive-investigation').textContent = 10 + invMod;
+    if (document.getElementById('passive-insight')) document.getElementById('passive-insight').textContent = 10 + insMod;
 
     // --- AC calculation ---
     if (!characterState.inventory) characterState.inventory = [];
@@ -555,26 +571,19 @@ function renderInventory() {
     } else {
         currentAC = characterState.baseAc + modifiers.dex;
     }
-    ELEMENTS.acDisplay.textContent = currentAC;
+    if (ELEMENTS.acDisplay) ELEMENTS.acDisplay.textContent = currentAC;
     
     // --- Render dynamic content ---
     renderInventory();
     renderEquippedWeapons(); 
     
     // --- Background Page ---
-    ELEMENTS.backgroundName.textContent = characterState.background.name;
-    ELEMENTS.backgroundFeatureName.textContent = `Feature: ${characterState.background.feature}`;
-    // TODO: We need to store and render the feature *description*
-    ELEMENTS.backgroundFeatureDesc.textContent = "Feature description will load here once implemented.";
+    if (ELEMENTS.backgroundName) ELEMENTS.backgroundName.textContent = characterState.background.name;
+    if (ELEMENTS.backgroundFeatureName) ELEMENTS.backgroundFeatureName.textContent = `Feature: ${characterState.background.feature}`;
+    if (ELEMENTS.backgroundFeatureDesc) ELEMENTS.backgroundFeatureDesc.textContent = "Feature description will load here once implemented.";
     
     // --- Features Page (Placeholder) ---
-    // This will be a complex render function for Phase 5
-    ELEMENTS.featuresContainer.innerHTML = `<p class="text-gray-400">Feature rendering is not yet implemented.</p>`;
-    
-    // *** BEGINNING OF FIX ***
-    // The broken code that tried to update non-existent elements
-    // (e.g., ELEMENTS.giantsMightUsesSpan.textContent) has been removed from here.
-    // *** END OF FIX ***
+    if (ELEMENTS.featuresContainer) ELEMENTS.featuresContainer.innerHTML = `<p class="text-gray-400">Feature rendering is not yet implemented.</p>`;
     
     // TODO: Re-build Action/Bonus Action/Other lists based on features
     
@@ -641,6 +650,8 @@ function loadCharacter(docId) {
  */
 function renderCharacterList(snapshot) {
     const container = ELEMENTS.characterListContainer;
+    if (!container) return; // Safeguard
+    
     container.innerHTML = ''; // Clear "Loading..."
 
     if (snapshot.empty) {
@@ -713,7 +724,7 @@ async function initializePersistence() {
                     renderCharacterList(snapshot);
                 }, (error) => {
                     console.error("Error listening to character collection:", error);
-                    ELEMENTS.characterListContainer.innerHTML = '<p class="text-red-400 text-center">Error loading character list.</p>';
+                    if (ELEMENTS.characterListContainer) ELEMENTS.characterListContainer.innerHTML = '<p class="text-red-400 text-center">Error loading character list.</p>';
                 });
 
             } else {
@@ -739,6 +750,7 @@ async function initializePersistence() {
  */
 function getCoinInputs() {
     const parseAndValidate = (element) => {
+        if (!element) return 0; // Safeguard for missing element
         const val = parseInt(element.value, 10);
         return isNaN(val) ? 0 : val;
     };
@@ -850,35 +862,35 @@ function handleCoinClear() {
  * Clears the weapon creation form fields.
  */
 function clearWeaponForm() {
-    ELEMENTS.itemTypeSelect.value = '';
-    ELEMENTS.weaponFormContainer.classList.add('hidden');
-    ELEMENTS.weaponNameInput.value = '';
-    ELEMENTS.weaponProficiencySelect.value = 'Yes';
-    ELEMENTS.weaponAttackTypeSelect.value = 'Melee';
-    ELEMENTS.weaponDamageInput.value = '';
-    ELEMENTS.weaponDamageTypeSelect.value = 'Bludgeoning';
-    ELEMENTS.weaponReachInput.value = '';
-    ELEMENTS.weaponWeightInput.value = '';
-    ELEMENTS.weaponCostInput.value = '';
-    ELEMENTS.weaponPropertiesInput.value = '';
-    ELEMENTS.weaponNotesTextarea.value = '';
+    if (ELEMENTS.itemTypeSelect) ELEMENTS.itemTypeSelect.value = '';
+    if (ELEMENTS.weaponFormContainer) ELEMENTS.weaponFormContainer.classList.add('hidden');
+    if (ELEMENTS.weaponNameInput) ELEMENTS.weaponNameInput.value = '';
+    if (ELEMENTS.weaponProficiencySelect) ELEMENTS.weaponProficiencySelect.value = 'Yes';
+    if (ELEMENTS.weaponAttackTypeSelect) ELEMENTS.weaponAttackTypeSelect.value = 'Melee';
+    if (ELEMENTS.weaponDamageInput) ELEMENTS.weaponDamageInput.value = '';
+    if (ELEMENTS.weaponDamageTypeSelect) ELEMENTS.weaponDamageTypeSelect.value = 'Bludgeoning';
+    if (ELEMENTS.weaponReachInput) ELEMENTS.weaponReachInput.value = '';
+    if (ELEMENTS.weaponWeightInput) ELEMENTS.weaponWeightInput.value = '';
+    if (ELEMENTS.weaponCostInput) ELEMENTS.weaponCostInput.value = '';
+    if (ELEMENTS.weaponPropertiesInput) ELEMENTS.weaponPropertiesInput.value = '';
+    if (ELEMENTS.weaponNotesTextarea) ELEMENTS.weaponNotesTextarea.value = '';
 }
 
 /**
  * Clears the armor creation form fields.
  */
 function clearArmorForm() {
-    ELEMENTS.itemTypeSelect.value = '';
-    ELEMENTS.armorFormContainer.classList.add('hidden');
-    ELEMENTS.armorNameInput.value = '';
-    ELEMENTS.armorTypeSelect.value = 'Light';
-    ELEMENTS.armorAcInput.value = '';
-    ELEMENTS.armorMaxDexInput.value = '0';
-    ELEMENTS.armorIsProficientSelect.value = 'Yes';
-    ELEMENTS.armorWeightInput.value = '';
-    ELEMENTS.armorCostInput.value = '';
-    ELEMENTS.armorStealthDisadvantageSelect.value = 'No';
-    ELEMENTS.armorNotesTextarea.value = '';
+    if (ELEMENTS.itemTypeSelect) ELEMENTS.itemTypeSelect.value = '';
+    if (ELEMENTS.armorFormContainer) ELEMENTS.armorFormContainer.classList.add('hidden');
+    if (ELEMENTS.armorNameInput) ELEMENTS.armorNameInput.value = '';
+    if (ELEMENTS.armorTypeSelect) ELEMENTS.armorTypeSelect.value = 'Light';
+    if (ELEMENTS.armorAcInput) ELEMENTS.armorAcInput.value = '';
+    if (ELEMENTS.armorMaxDexInput) ELEMENTS.armorMaxDexInput.value = '0';
+    if (ELEMENTS.armorIsProficientSelect) ELEMENTS.armorIsProficientSelect.value = 'Yes';
+    if (ELEMENTS.armorWeightInput) ELEMENTS.armorWeightInput.value = '';
+    if (ELEMENTS.armorCostInput) ELEMENTS.armorCostInput.value = '';
+    if (ELEMENTS.armorStealthDisadvantageSelect) ELEMENTS.armorStealthDisadvantageSelect.value = 'No';
+    if (ELEMENTS.armorNotesTextarea) ELEMENTS.armorNotesTextarea.value = '';
 }
 
 /**
@@ -909,6 +921,10 @@ window.handleInventoryFormChange = function(itemType) {
  * Handles saving a new weapon item from the form.
  */
 window.addNewWeapon = function() {
+    if (!ELEMENTS.weaponNameInput || !ELEMENTS.weaponDamageInput) {
+        addRollToHistory('action', `<span class="text-red-500 font-bold">Error:</span> Form elements missing.`);
+        return;
+    }
     const name = ELEMENTS.weaponNameInput.value.trim();
     const damage = ELEMENTS.weaponDamageInput.value.trim();
     
@@ -944,6 +960,10 @@ window.addNewWeapon = function() {
  * Handles saving a new armor item from the form.
  */
 window.addNewArmor = function() {
+    if (!ELEMENTS.armorNameInput || !ELEMENTS.armorAcInput) {
+        addRollToHistory('action', `<span class="text-red-500 font-bold">Error:</span> Form elements missing.`);
+        return;
+    }
     const name = ELEMENTS.armorNameInput.value.trim();
     const ac = parseInt(ELEMENTS.armorAcInput.value);
 
@@ -1097,11 +1117,11 @@ function handleLongRest() {
 
 // Debounced Textarea Change Listeners
 const debouncedNotesChange = debounce(() => {
-    updateState({ notesContent: ELEMENTS.notesTextarea.value });
+    if (ELEMENTS.notesTextarea) updateState({ notesContent: ELEMENTS.notesTextarea.value });
 }, 500);
 
 const debouncedOriginStoryChange = debounce(() => {
-    updateState({ background: { ...characterState.background, story: ELEMENTS.originStoryTextarea.value } });
+    if (ELEMENTS.originStoryTextarea) updateState({ background: { ...characterState.background, story: ELEMENTS.originStoryTextarea.value } });
 }, 500);
 
 // --- HP HANDLER FUNCTIONS (Unchanged) ---
@@ -1183,7 +1203,7 @@ function updateHistoryDisplay(type) {
         currentIndex = currentActionHistoryIndex;
     }
 
-    if (!displayElement) return; // Exit if elements aren't loaded
+    if (!displayElement || !backButton || !forwardButton) return; // Exit if history elements aren't loaded
 
     if (historyArray.length === 0 || currentIndex === -1 || currentIndex >= historyArray.length) {
         displayElement.innerHTML = "Roll Result";
@@ -1665,6 +1685,8 @@ function calculateProficiencyBonus(level) {
  * NEW: Calculates Max HP based on Level and CON modifier. (Fighter/d10 Hit Die assumption)
  */
 function calculateMaxHp() {
+    if (!ELEMENTS.createCharLevel || !ELEMENTS.createScoreCon || !ELEMENTS.createMaxHp) return; // Safeguard
+    
     const level = parseInt(ELEMENTS.createCharLevel.value) || 1;
     const conScore = parseInt(ELEMENTS.createScoreCon.value) || 10;
     const conModifier = calculateModifier(conScore);
@@ -1675,11 +1697,6 @@ function calculateMaxHp() {
         // Level 1: Max Hit Die (10 for Fighter) + CON Modifier
         maxHp = 10 + conModifier;
     } else {
-        // Level 2+: Previous HP (from current state or previous form save) + (Average Roll (6 for d10) + CON Modifier) for each additional level
-        
-        // This is complex because we don't store "unadjusted" Max HP. 
-        // For simplicity during creation, we'll calculate the *total* from scratch.
-        
         // HP at Level 1
         maxHp = 10 + conModifier;
         
@@ -1710,6 +1727,8 @@ function calculateMaxHp() {
  * NEW: Handles auto-checking the correct Saving Throw proficiencies based on the selected Class.
  */
 function handleClassChange() {
+    if (!ELEMENTS.createCharClass) return; // Safeguard
+    
     const selectedClass = ELEMENTS.createCharClass.value;
     const savesToProf = CLASS_TO_SAVES[selectedClass] || [];
     
@@ -1732,17 +1751,17 @@ function handleClassChange() {
  * @returns {object} A new character data object based on form values.
  */
 function getCharacterDataFromForm() {
-    // --- 1. Read Vitals & Core Stats ---
-    const level = parseInt(ELEMENTS.createCharLevel.value) || 1;
+    // --- 1. Read Vitals & Core Stats (Safeguarded with optional chaining where needed) ---
+    const level = parseInt(ELEMENTS.createCharLevel?.value) || 1;
     const profBonus = calculateProficiencyBonus(level);
     
     const scores = {
-        str: parseInt(ELEMENTS.createScoreStr.value) || 10,
-        dex: parseInt(ELEMENTS.createScoreDex.value) || 10,
-        con: parseInt(ELEMENTS.createScoreCon.value) || 10,
-        int: parseInt(ELEMENTS.createScoreInt.value) || 10,
-        wis: parseInt(ELEMENTS.createScoreWis.value) || 10,
-        cha: parseInt(ELEMENTS.createScoreCha.value) || 10,
+        str: parseInt(ELEMENTS.createScoreStr?.value) || 10,
+        dex: parseInt(ELEMENTS.createScoreDex?.value) || 10,
+        con: parseInt(ELEMENTS.createScoreCon?.value) || 10,
+        int: parseInt(ELEMENTS.createScoreInt?.value) || 10,
+        wis: parseInt(ELEMENTS.createScoreWis?.value) || 10,
+        cha: parseInt(ELEMENTS.createScoreCha?.value) || 10,
     };
     
     const modifiers = {
@@ -1757,9 +1776,9 @@ function getCharacterDataFromForm() {
     // --- 2. Build the new Character State object ---
     const newCharacterData = {
         // Vitals
-        name: ELEMENTS.createCharName.value || "New Character",
-        race: ELEMENTS.createCharRace.value || "Unknown",
-        class: ELEMENTS.createCharClass.value || "Unknown",
+        name: ELEMENTS.createCharName?.value || "New Character",
+        race: ELEMENTS.createCharRace?.value || "Unknown",
+        class: ELEMENTS.createCharClass?.value || "Unknown",
         level: level,
         proficiencyBonus: profBonus,
         
@@ -1768,63 +1787,53 @@ function getCharacterDataFromForm() {
         modifiers: modifiers,
 
         // Combat Stats
-        maxHp: parseInt(ELEMENTS.createMaxHp.value) || 10, // Uses the automatically calculated value
+        maxHp: parseInt(ELEMENTS.createMaxHp?.value) || 10, // Uses the automatically calculated value
         // *** NOTE: We do NOT update currentHp here, only maxHp ***
-        baseAc: parseInt(ELEMENTS.createAc.value) || 10,
-        speed: parseInt(ELEMENTS.createSpeed.value) || 30,
+        baseAc: parseInt(ELEMENTS.createAc?.value) || 10,
+        speed: parseInt(ELEMENTS.createSpeed?.value) || 30,
 
         // Save Proficiencies
         saveProficiencies: {
-            str: ELEMENTS.createSaveProfStr.checked,
-            dex: ELEMENTS.createSaveProfDex.checked,
-            con: ELEMENTS.createSaveProfCon.checked,
-            int: ELEMENTS.createSaveProfInt.checked,
-            wis: ELEMENTS.createSaveProfWis.checked,
-            cha: ELEMENTS.createSaveProfCha.checked,
+            str: ELEMENTS.createSaveProfStr?.checked || false,
+            dex: ELEMENTS.createSaveProfDex?.checked || false,
+            con: ELEMENTS.createSaveProfCon?.checked || false,
+            int: ELEMENTS.createSaveProfInt?.checked || false,
+            wis: ELEMENTS.createSaveProfWis?.checked || false,
+            cha: ELEMENTS.createSaveProfCha?.checked || false,
         },
 
-        // Skill Proficiencies
+        // Skill Proficiencies (Safeguarding all skill lookups)
         skillProficiencies: {
-            acrobatics: ELEMENTS.createSkillProfAcrobatics.checked,
-            animalhandling: ELEMENTS.createSkillProfAnimalHandling.checked,
-            arcana: ELEMENTS.createSkillProfArcana.checked,
-            athletics: ELEMENTS.createSkillProfAthletics.checked,
-            deception: ELEMENTS.createSkillProfDeception.checked,
-            history: ELEMENTS.createSkillProfHistory.checked,
-            insight: ELEMENTS.createSkillProfInsight.checked,
-            intimidation: ELEMENTS.createSkillProfIntimidation.checked,
-            investigation: ELEMENTS.createSkillProfInvestigation.checked,
-            medicine: ELEMENTS.createSkillProfMedicine.checked,
-            nature: ELEMENTS.createSkillProfNature.checked,
-            perception: ELEMENTS.createSkillProfPerception.checked,
-            performance: ELEMENTS.createSkillProfPerformance.checked,
-            persuasion: ELEMENTS.createSkillProfPersuasion.checked,
-            religion: ELEMENTS.createSkillProfReligion.checked,
-            sleightofhand: ELEMENTS.createSkillProfSleightOfHand.checked,
-            stealth: ELEMENTS.createSkillProfStealth.checked,
-            survival: ELEMENTS.createSkillProfSurvival.checked,
+            acrobatics: ELEMENTS.createSkillProfAcrobatics?.checked || false,
+            animalhandling: ELEMENTS.createSkillProfAnimalHandling?.checked || false,
+            arcana: ELEMENTS.createSkillProfArcana?.checked || false,
+            athletics: ELEMENTS.createSkillProfAthletics?.checked || false,
+            deception: ELEMENTS.createSkillProfDeception?.checked || false,
+            history: ELEMENTS.createSkillProfHistory?.checked || false,
+            insight: ELEMENTS.createSkillProfInsight?.checked || false,
+            intimidation: ELEMENTS.createSkillProfIntimidation?.checked || false,
+            investigation: ELEMENTS.createSkillProfInvestigation?.checked || false,
+            medicine: ELEMENTS.createSkillProfMedicine?.checked || false,
+            nature: ELEMENTS.createSkillProfNature?.checked || false,
+            perception: ELEMENTS.createSkillProfPerception?.checked || false,
+            performance: ELEMENTS.createSkillProfPerformance?.checked || false,
+            persuasion: ELEMENTS.createSkillProfPersuasion?.checked || false,
+            religion: ELEMENTS.createSkillProfReligion?.checked || false,
+            sleightofhand: ELEMENTS.createSkillProfSleightOfHand?.checked || false,
+            stealth: ELEMENTS.createSkillProfStealth?.checked || false,
+            survival: ELEMENTS.createSkillProfSurvival?.checked || false,
         },
         
-        // Features (simple storage, logic will be in Phase 4)
+        // Features (simple storage, logic will be in Phase 4) - Skipped non-existent elements
         features: {
-            // FIX: These fields don't exist in index.html yet, commenting out for stability
-            // fightingStyle: ELEMENTS.createFightingStyle.value, 
-            // feat1: ELEMENTS.createFeat1.value,
-            // feat2: ELEMENTS.createFeat2.value,
-            runes: {
-                // fire: ELEMENTS.createRuneFire.checked, 
-                // cloud: ELEMENTS.createRuneCloud.checked,
-                // frost: ELEMENTS.createRuneFrost.checked,
-                // stone: ELEMENTS.createRuneStone.checked,
-                // hill: ELEMENTS.createRuneHill.checked,
-            }
+            fightingStyle: "None", 
+            feat1: "None",
+            feat2: "None",
+            runes: {}
         },
         
-        // Background (These fields don't exist in index.html yet, commenting out for stability)
+        // Background - Skipped non-existent elements
         background: {
-            // name: ELEMENTS.createBackgroundName.value || "Unknown",
-            // feature: ELEMENTS.createBackgroundFeature.value || "None",
-            // story: ELEMENTS.createBackgroundStory.value || "",
             name: "Unknown",
             feature: "None",
             story: "",
@@ -1876,23 +1885,23 @@ function populateCreateForm() {
     const state = characterState;
     
     // Vitals
-    ELEMENTS.createCharName.value = state.name;
-    ELEMENTS.createCharRace.value = state.race;
-    ELEMENTS.createCharClass.value = state.class;
-    ELEMENTS.createCharLevel.value = state.level;
+    if (ELEMENTS.createCharName) ELEMENTS.createCharName.value = state.name;
+    if (ELEMENTS.createCharRace) ELEMENTS.createCharRace.value = state.race;
+    if (ELEMENTS.createCharClass) ELEMENTS.createCharClass.value = state.class;
+    if (ELEMENTS.createCharLevel) ELEMENTS.createCharLevel.value = state.level;
     
     // Scores
-    ELEMENTS.createScoreStr.value = state.scores.str;
-    ELEMENTS.createScoreDex.value = state.scores.dex;
-    ELEMENTS.createScoreCon.value = state.scores.con;
-    ELEMENTS.createScoreInt.value = state.scores.int;
-    ELEMENTS.createScoreWis.value = state.scores.wis;
-    ELEMENTS.createScoreCha.value = state.scores.cha;
+    if (ELEMENTS.createScoreStr) ELEMENTS.createScoreStr.value = state.scores.str;
+    if (ELEMENTS.createScoreDex) ELEMENTS.createScoreDex.value = state.scores.dex;
+    if (ELEMENTS.createScoreCon) ELEMENTS.createScoreCon.value = state.scores.con;
+    if (ELEMENTS.createScoreInt) ELEMENTS.createScoreInt.value = state.scores.int;
+    if (ELEMENTS.createScoreWis) ELEMENTS.createScoreWis.value = state.scores.wis;
+    if (ELEMENTS.createScoreCha) ELEMENTS.createScoreCha.value = state.scores.cha;
     
     // Combat Stats
-    ELEMENTS.createMaxHp.value = state.maxHp;
-    ELEMENTS.createAc.value = state.baseAc;
-    ELEMENTS.createSpeed.value = state.speed;
+    if (ELEMENTS.createMaxHp) ELEMENTS.createMaxHp.value = state.maxHp;
+    if (ELEMENTS.createAc) ELEMENTS.createAc.value = state.baseAc;
+    if (ELEMENTS.createSpeed) ELEMENTS.createSpeed.value = state.speed;
     
     // Save Proficiencies
     for (const [save, isProf] of Object.entries(state.saveProficiencies)) {
@@ -1906,10 +1915,8 @@ function populateCreateForm() {
         if (el) el.checked = isProf;
     }
     
-    // Features - Skip populating fields that don't exist in HTML yet
+    // Features/Background - Skipping non-existent elements
     
-    // Background - Skip populating fields that don't exist in HTML yet
-
     // Call the live update function to initialize the modifier displays AND calculate HP
     updateAllCreationStats();
     // After populating the class, trigger the save auto-selection
@@ -1921,28 +1928,26 @@ function populateCreateForm() {
  */
 function clearCreateForm() {
     // Vitals
-    ELEMENTS.createCharName.value = '';
-    ELEMENTS.createCharRace.value = '';
-    ELEMENTS.createCharClass.value = 'Unknown'; // Default the dropdown
-    ELEMENTS.createCharLevel.value = 1;
+    if (ELEMENTS.createCharName) ELEMENTS.createCharName.value = '';
+    if (ELEMENTS.createCharRace) ELEMENTS.createCharRace.value = '';
+    if (ELEMENTS.createCharClass) ELEMENTS.createCharClass.value = 'Unknown'; // Default the dropdown
+    if (ELEMENTS.createCharLevel) ELEMENTS.createCharLevel.value = 1;
     
     // Scores
-    ELEMENTS.createScoreStr.value = 10;
-    ELEMENTS.createScoreDex.value = 10;
-    ELEMENTS.createScoreCon.value = 10;
-    ELEMENTS.createScoreInt.value = 10;
-    ELEMENTS.createScoreWis.value = 10;
-    ELEMENTS.createScoreCha.value = 10;
+    if (ELEMENTS.createScoreStr) ELEMENTS.createScoreStr.value = 10;
+    if (ELEMENTS.createScoreDex) ELEMENTS.createScoreDex.value = 10;
+    if (ELEMENTS.createScoreCon) ELEMENTS.createScoreCon.value = 10;
+    if (ELEMENTS.createScoreInt) ELEMENTS.createScoreInt.value = 10;
+    if (ELEMENTS.createScoreWis) ELEMENTS.createScoreWis.value = 10;
+    if (ELEMENTS.createScoreCha) ELEMENTS.createScoreCha.value = 10;
     
     // Combat Stats
-    ELEMENTS.createMaxHp.value = 10;
-    ELEMENTS.createAc.value = 10;
-    ELEMENTS.createSpeed.value = 30;
+    if (ELEMENTS.createMaxHp) ELEMENTS.createMaxHp.value = 10;
+    if (ELEMENTS.createAc) ELEMENTS.createAc.value = 10;
+    if (ELEMENTS.createSpeed) ELEMENTS.createSpeed.value = 30;
     
     // Save Proficiencies
     document.querySelectorAll('#page-character-creation input[type="checkbox"]').forEach(el => el.checked = false);
-    
-    // Features/Background - Skipping non-existent elements
     
     // Reset modifier displays AND calculate initial HP
     updateAllCreationStats();
@@ -1959,7 +1964,7 @@ function handleEditCharacter() {
     populateCreateForm();
     
     // 2. Change the page title
-    ELEMENTS.characterCreationTitle.textContent = "Edit Character";
+    if (ELEMENTS.characterCreationTitle) ELEMENTS.characterCreationTitle.textContent = "Edit Character";
     
     // 3. Show the form page
     showAppPage('page-character-creation');
@@ -2135,7 +2140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         coinPpInput: document.getElementById('coin-pp-input'),
         coinGpInput: document.getElementById('coin-gp-input'),
         coinEpInput: document.getElementById('coin-ep-input'),
-        coinSpInput: document.getElementById('coin-sp-input'), // <<< CRITICAL FIX APPLIED
+        coinSpInput: document.getElementById('coin-sp-input'), 
         coinCpInput: document.getElementById('coin-cp-input'),
         coinAddButton: document.getElementById('coin-add-button'),
         coinRemoveButton: document.getElementById('coin-remove-button'),
@@ -2217,7 +2222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         createSkillProfSleightOfHand: document.getElementById('create-skill-prof-sleightofhand'),
         createSkillProfStealth: document.getElementById('create-skill-prof-stealth'),
         createSkillProfSurvival: document.getElementById('create-skill-prof-survival'),
-        // Omitting non-existent feature/background elements for stability
     };
     // --- *** END OF CRITICAL FIX *** ---
     
@@ -2225,20 +2229,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ATTACH EVENT LISTENERS (Optimized using ELEMENT references) ---
 
     // Splash screen
-    ELEMENTS.splashScreen.addEventListener('click', showMainContent);
+    if (ELEMENTS.splashScreen) ELEMENTS.splashScreen.addEventListener('click', showMainContent);
 
     // New App-Level Navigation
-    ELEMENTS.createCharacterButton.addEventListener('click', () => {
+    if (ELEMENTS.createCharacterButton) ELEMENTS.createCharacterButton.addEventListener('click', () => {
         // *** NEW ***
         isEditMode = false; // Set mode to "create"
         clearCreateForm(); // Clear the form
-        ELEMENTS.characterCreationTitle.textContent = "Create New Character"; // Reset title
+        if (ELEMENTS.characterCreationTitle) ELEMENTS.characterCreationTitle.textContent = "Create New Character"; // Reset title
         showAppPage('page-character-creation');
     });
-    ELEMENTS.backToLandingButton.addEventListener('click', () => {
+    if (ELEMENTS.backToLandingButton) ELEMENTS.backToLandingButton.addEventListener('click', () => {
         showAppPage('page-landing');
     });
-    ELEMENTS.backToLandingFromCreateButton.addEventListener('click', () => {
+    if (ELEMENTS.backToLandingFromCreateButton) ELEMENTS.backToLandingFromCreateButton.addEventListener('click', () => {
         // *** MODIFIED ***
         // If we were editing, go back to the sheet, not the menu
         if (isEditMode) {
@@ -2253,24 +2257,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // *** MODIFIED: Save Character Button ***
     // This one button now handles both creating and updating
-    ELEMENTS.saveNewCharacterButton.addEventListener('click', handleSaveOrUpdateCharacter);
+    if (ELEMENTS.saveNewCharacterButton) ELEMENTS.saveNewCharacterButton.addEventListener('click', handleSaveOrUpdateCharacter);
 
-    // Roll History Navigation
-    ELEMENTS.skillHistoryBack.addEventListener('click', () => handleHistoryNavigation('skill', 'back'));
-    ELEMENTS.skillHistoryForward.addEventListener('click', () => handleHistoryNavigation('skill', 'forward'));
-    ELEMENTS.saveHistoryBack.addEventListener('click', () => handleHistoryNavigation('save', 'back'));
-    ELEMENTS.saveHistoryForward.addEventListener('click', () => handleHistoryNavigation('save', 'forward'));
-    ELEMENTS.actionHistoryBack.addEventListener('click', () => handleHistoryNavigation('action', 'back'));
-    ELEMENTS.actionHistoryForward.addEventListener('click', () => handleHistoryNavigation('action', 'forward'));
+    // Roll History Navigation (Safeguarded)
+    if (ELEMENTS.skillHistoryBack) ELEMENTS.skillHistoryBack.addEventListener('click', () => handleHistoryNavigation('skill', 'back'));
+    if (ELEMENTS.skillHistoryForward) ELEMENTS.skillHistoryForward.addEventListener('click', () => handleHistoryNavigation('skill', 'forward'));
+    if (ELEMENTS.saveHistoryBack) ELEMENTS.saveHistoryBack.addEventListener('click', () => handleHistoryNavigation('save', 'back'));
+    if (ELEMENTS.saveHistoryForward) ELEMENTS.saveHistoryForward.addEventListener('click', () => handleHistoryNavigation('save', 'forward'));
+    if (ELEMENTS.actionHistoryBack) ELEMENTS.actionHistoryBack.addEventListener('click', () => handleHistoryNavigation('action', 'back'));
+    if (ELEMENTS.actionHistoryForward) ELEMENTS.actionHistoryForward.addEventListener('click', () => handleHistoryNavigation('action', 'forward'));
 
     // Character Sheet Listeners
     if (ELEMENTS.longRestButton) ELEMENTS.longRestButton.addEventListener('click', handleLongRest);
     if (ELEMENTS.shortRestButton) ELEMENTS.shortRestButton.addEventListener('click', handleShortRest);
     
     // Coinage Action Buttons
-    ELEMENTS.coinAddButton.addEventListener('click', handleCoinAdd);
-    ELEMENTS.coinRemoveButton.addEventListener('click', handleCoinRemove);
-    ELEMENTS.coinClearButton.addEventListener('click', handleCoinClear);
+    if (ELEMENTS.coinAddButton) ELEMENTS.coinAddButton.addEventListener('click', handleCoinAdd);
+    if (ELEMENTS.coinRemoveButton) ELEMENTS.coinRemoveButton.addEventListener('click', handleCoinRemove);
+    if (ELEMENTS.coinClearButton) ELEMENTS.coinClearButton.addEventListener('click', handleCoinClear);
 
     if (ELEMENTS.hpPlusButton) ELEMENTS.hpPlusButton.addEventListener('click', handleHpPlus);
     if (ELEMENTS.hpMinusButton) ELEMENTS.hpMinusButton.addEventListener('click', handleHpMinus);
@@ -2278,7 +2282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // The addWeaponButton and addNewArmor buttons call functions directly via onclick in HTML
     
     // Primary Delegate Listener (for all rolls, navigation, and dynamic inventory actions)
-    ELEMENTS.mainContent.addEventListener('click', (event) => {
+    if (ELEMENTS.mainContent) ELEMENTS.mainContent.addEventListener('click', (event) => {
         // Dice Rollers
         const dieButton = event.target.closest('.dice-button-svg');
         if (dieButton) {
@@ -2326,7 +2330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // HP Change listener (using 'input' for better responsiveness than 'change')
-    ELEMENTS.mainContent.addEventListener('input', (event) => {
+    if (ELEMENTS.mainContent) ELEMENTS.mainContent.addEventListener('input', (event) => {
         if (event.target === ELEMENTS.currentHpInput || event.target === ELEMENTS.tempHpInput) {
             handleHpChange(event);
         }
@@ -2345,7 +2349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // *** NEW: Class Change Listener (For Saving Throw Auto-Selection) ***
-    ELEMENTS.createCharClass.addEventListener('change', handleClassChange);
+    if (ELEMENTS.createCharClass) ELEMENTS.createCharClass.addEventListener('change', handleClassChange);
     
     // Textarea listeners (Debounced for performance)
     if (ELEMENTS.notesTextarea) ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
