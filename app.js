@@ -2194,6 +2194,9 @@ document.addEventListener('DOMContentLoaded', () => {
         notesTextarea: document.getElementById('notes-content-textarea'),
         originStoryTextarea: document.getElementById('origin-story-textarea'),
         
+        // *** NAVIGATION FIX STEP 1: Add mainNavigation ***
+        mainNavigation: document.getElementById('main-navigation'),
+        
         // NEW: Character Creation Form Elements
         createCharName: document.getElementById('create-char-name'),
         createCharRace: document.getElementById('create-char-race'),
@@ -2339,11 +2342,18 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteItem(itemId);
         }
 
-        // Character Sheet *Internal* Navigation
-        if (event.target.closest('.nav-button')) {
-            handleNavigation(event);
-        }
+        // *** NAVIGATION FIX STEP 2: Remove navigation from this listener ***
+        // (The .nav-button check that was here has been removed)
     });
+
+    // *** NAVIGATION FIX STEP 3: Add a new, dedicated listener for navigation ***
+    if (ELEMENTS.mainNavigation) {
+        ELEMENTS.mainNavigation.addEventListener('click', (event) => {
+            if (event.target.closest('.nav-button')) {
+                handleNavigation(event);
+            }
+        });
+    }
 
     // HP Change listener (using 'input' for better responsiveness than 'change')
     if (ELEMENTS.mainContent) ELEMENTS.mainContent.addEventListener('input', (event) => {
