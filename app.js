@@ -123,6 +123,15 @@ const generateUniqueId = () => {
      return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
 
+/**
+ * Calculates the ability modifier for a given score.
+ * This is duplicated from the Creation logic below but kept here for general utility.
+ * @param {number} score - The ability score (e.g., 10, 20).
+ * @returns {number} The modifier (e.g., 0, +5).
+ */
+function calculateModifier(score) {
+    return Math.floor((score - 10) / 2);
+}
 
 /**
  * Custom persistence logic using localStorage when Firebase is unavailable.
@@ -266,7 +275,11 @@ function renderEquippedWeapons() {
     
     equippedWeapons.forEach(weapon => {
         // Determine modifier based on attack type
-        const attackMod = weapon.attackType === 'Melee' ? meleeAttackMod : rangedAttackMod;
+        // NOTE: The combat logic is correct per D&D 5e rules, but the damage roll will need the ability modifier passed
+        // For the attack roll (to hit), the attackMod is AbilityMod + ProfBonus (if proficient)
+        const attackModBase = weapon.attackType === 'Melee' ? strMod : dexMod;
+        const attackMod = attackModBase + (weapon.isProficient ? profBonus : 0);
+        
         const damageAbilityMod = weapon.attackType === 'Melee' ? strMod : dexMod;
         
         const hitString = `1d20+${attackMod}`;
@@ -701,7 +714,6 @@ async function initializePersistence() {
         }
     }
 }
-
 // --- CURRENCY HANDLER FUNCTIONS (NEW) ---
 
 /**
@@ -870,7 +882,7 @@ window.handleInventoryFormChange = function(itemType) {
     if (itemType === 'Weapon') {
         ELEMENTS.weaponFormContainer.classList.remove('hidden');
     } else if (itemType === 'Armor') {
-        ELEMENTLegal.armorFormContainer.classList.remove('hidden');
+        ELEMENTS.armorFormContainer.classList.remove('hidden');
     } else if (itemType === 'Other') {
         ELEMENTS.otherFormPlaceholder.classList.remove('hidden');
     }
@@ -1217,8 +1229,6 @@ function handleHistoryNavigation(type, direction) {
         updateHistoryDisplay('action');
     }
 }
-
-
 // --- ROLL LOGIC (Modified) ---
 
 function rollD20() { return Math.floor(Math.random() * 20) + 1; }
@@ -1625,15 +1635,6 @@ function showMainContent() {
 // --- *** START OF NEW CHARACTER EDIT/CREATE LOGIC (Phase 4) *** ---
 
 /**
- * Calculates the ability modifier for a given score.
- * @param {number} score - The ability score (e.g., 10, 20).
- * @returns {number} The modifier (e.g., 0, +5).
- */
-function calculateModifier(score) {
-    return Math.floor((score - 10) / 2);
-}
-
-/**
  * Calculates the proficiency bonus for a given level.
  * @param {number} level - The character's level.
  * @returns {number} The proficiency bonus.
@@ -1747,6 +1748,35 @@ function getCharacterDataFromForm() {
 }
 
 /**
+ * NEW: Updates the modifier display for a single ability score field during character creation/edit.
+ * @param {string} scoreId - The ID of the score input element (e.g., 'create-score-str').
+ * @param {string} modId - The ID of the modifier display element (e.g., 'create-mod-str').
+ */
+function updateCreationStatDisplay(scoreId, modId) {
+    const scoreInput = document.getElementById(scoreId);
+    const modDisplay = document.getElementById(modId);
+    
+    if (scoreInput && modDisplay) {
+        const score = parseInt(scoreInput.value) || 0;
+        const modifier = calculateModifier(score);
+        const prefix = modifier >= 0 ? '+' : '';
+        modDisplay.textContent = `${prefix}${modifier}`;
+    }
+}
+
+/**
+ * NEW: Convenience function to update all 6 stat displays.
+ */
+function updateAllCreationStats() {
+    updateCreationStatDisplay('create-score-str', 'create-mod-str');
+    updateCreationStatDisplay('create-score-dex', 'create-mod-dex');
+    updateCreationStatDisplay('create-score-con', 'create-mod-con');
+    updateCreationStatDisplay('create-score-int', 'create-mod-int');
+    updateCreationStatDisplay('create-score-wis', 'create-mod-wis');
+    updateCreationStatDisplay('create-score-cha', 'create-mod-cha');
+}
+
+/**
  * NEW: Populates the creation form with data from the active characterState.
  */
 function populateCreateForm() {
@@ -1801,6 +1831,9 @@ function populateCreateForm() {
     ELEMENTS.createBackgroundName.value = state.background.name;
     ELEMENTS.createBackgroundFeature.value = state.background.feature;
     ELEMENTS.createBackgroundStory.value = state.background.story;
+
+    // Call the live update function to initialize the modifier displays
+    updateAllCreationStats();
 }
 
 /**
@@ -1838,6 +1871,9 @@ function clearCreateForm() {
     ELEMENTS.createBackgroundName.value = '';
     ELEMENTS.createBackgroundFeature.value = '';
     ELEMENTS.createBackgroundStory.value = '';
+
+    // Reset modifier displays
+    updateAllCreationStats();
 }
 
 /**
@@ -1855,7 +1891,6 @@ function handleEditCharacter() {
     // 3. Show the form page
     showAppPage('page-character-creation');
 }
-
 /**
  * REFACTORED: Now only handles saving a BRAND NEW character.
  */
@@ -1954,10 +1989,7 @@ async function handleSaveOrUpdateCharacter() {
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- *** BEGINNING OF FIX *** ---
-    // This object now *only* includes elements that exist in the HTML.
-    // All old, deleted IDs (like giantsMightUsesSpan) have been removed
-    // to prevent the script from crashing when it tries to find them.
+    // --- *** BEGINNING OF FIX (Updated with new Modifier IDs) *** ---
     ELEMENTS = {
         // Splash & Main
         splashScreen: document.getElementById('splash-screen'),
@@ -2078,6 +2110,12 @@ document.addEventListener('DOMContentLoaded', () => {
         createScoreInt: document.getElementById('create-score-int'),
         createScoreWis: document.getElementById('create-score-wis'),
         createScoreCha: document.getElementById('create-score-cha'),
+        createModStr: document.getElementById('create-mod-str'), // NEW
+        createModDex: document.getElementById('create-mod-dex'), // NEW
+        createModCon: document.getElementById('create-mod-con'), // NEW
+        createModInt: document.getElementById('create-mod-int'), // NEW
+        createModWis: document.getElementById('create-mod-wis'), // NEW
+        createModCha: document.getElementById('create-mod-cha'), // NEW
         createMaxHp: document.getElementById('create-max-hp'),
         createAc: document.getElementById('create-ac'),
         createSpeed: document.getElementById('create-speed'),
@@ -2228,6 +2266,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === ELEMENTS.currentHpInput || event.target === ELEMENTS.tempHpInput) {
             handleHpChange(event);
         }
+        
+        // *** NEW: Live Ability Score Modifier Update ***
+        const abilityScoreIds = ['create-score-str', 'create-score-dex', 'create-score-con', 'create-score-int', 'create-score-wis', 'create-score-cha'];
+        const stat = abilityScoreIds.find(id => event.target.id === id);
+        
+        if (stat) {
+            const modId = stat.replace('score', 'mod');
+            updateCreationStatDisplay(stat, modId);
+        }
+        // *** END NEW ***
     });
     
     // Textarea listeners (Debounced for performance)

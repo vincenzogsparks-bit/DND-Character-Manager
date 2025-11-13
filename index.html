@@ -92,26 +92,32 @@
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-str" class="label mb-2">Strength</label>
                                 <input type="number" id="create-score-str" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-str" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-dex" class="label mb-2">Dexterity</label>
                                 <input type="number" id="create-score-dex" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-dex" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-con" class="label mb-2">Constitution</label>
                                 <input type="number" id="create-score-con" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-con" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-int" class="label mb-2">Intelligence</label>
                                 <input type="number" id="create-score-int" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-int" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-wis" class="label mb-2">Wisdom</label>
                                 <input type="number" id="create-score-wis" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-wis" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                             <div class="stat-block rounded-lg p-4 text-center">
                                 <label for="create-score-cha" class="label mb-2">Charisma</label>
                                 <input type="number" id="create-score-cha" class="inventory-form-field text-center text-2xl" value="10">
+                                <div id="create-mod-cha" class="modifier text-3xl font-bold text-yellow-400 mt-2">+0</div>
                             </div>
                         </div>
                     </div>
@@ -691,8 +697,7 @@
                                 </li>
                             </ul>
                         </div>
-
-                    </div> <div id="page-actions" class="page-content hidden">
+					</div> <div id="page-actions" class="page-content hidden">
                         <div
                             class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
 
@@ -876,7 +881,7 @@
                                     <div>
                                         <label for="item-type-select" class="block text-sm font-semibold text-gray-400 mb-1">Item Type</label>
                                         <select id="item-type-select" class="inventory-form-field w-full" onchange="handleInventoryFormChange(this.value)">
-                                            <option value="">â€” Select Item Type â€”</option>
+                                            <option value="">— Select Item Type —</option>
                                             <option value="Weapon">Weapon</option>
                                             <option value="Armor">Armor</option>
                                             <option value="Other">Other Equipment</option>
@@ -1065,5 +1070,4 @@
     
 </body>
 
-</html>
-</file>				
+</html>	
