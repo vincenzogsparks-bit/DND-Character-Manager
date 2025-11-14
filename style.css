@@ -28,430 +28,398 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 100;
     cursor: pointer;
-    transition: opacity 0.5s ease-out;
+    opacity: 1;
+    transition: opacity 1s ease-out;
 }
 
 #splash-placeholder {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     background-color: #2d3748;
-    /* Darker gray */
-    border: 4px solid #ecc94b;
-    /* Solid Gold/Yellow border */
+    /* Gray background for icon area */
     border-radius: 50%;
-    /* Circular */
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    color: #ecc94b;
-    /* Lighter gray text */
-    font-style: italic;
-    animation: pulse-interact 2s infinite ease-in-out;
-    /* Apply pulse animation */
+    margin-bottom: 20px;
+    border: 4px solid #ecc94b;
+    /* Yellow border */
+    animation: pulse-interact 2s infinite;
 }
 
 #splash-icon {
-    width: 100px;
-    /* SVG size */
-    height: 100px;
-    fill: #ecc94b;
+    width: 80px;
+    height: 80px;
+    color: #ecc94b;
+    /* Yellow color for the icon */
 }
 
 #splash-text {
     font-size: 2.5rem;
-    color: #ecc94b;
-    /* Yellow text */
-    margin-top: 2rem;
     font-weight: 700;
-    /* Bolder font */
-    letter-spacing: 2px;
-    /* More prominent spacing */
-    text-shadow: 0 0 8px rgba(236, 201, 75, 0.3);
-    /* Subtle glow effect */
+    color: #ecc94b;
+    /* Yellow color for text */
 }
 
-/* Main content - NO LONGER handles the fade-in. */
+/* Main Content Styles */
 #main-content {
-    /*
+    /* Initially hidden via JS, but if loaded, it looks like this */
     opacity: 0;
-    transition: opacity 0.5s ease-in;
-    pointer-events: none;
-    */
-    /* Disable interaction until loaded - This logic is moved below */
+    transition: opacity 1s ease-in;
 }
 
-/* #main-content.loaded {
-    opacity: 1;
-    pointer-events: all;
-} 
-*/
-
-/* NEW: Page containers for fade-in transitions */
-/* These are the top-level containers for the menu and the sheet */
-#main-menu,
-#character-sheet-page {
-    opacity: 0;
-    transition: opacity 0.5s ease-in;
-    pointer-events: none;
+/* Navigation Bar */
+#nav-bar {
+    background-color: #1a202c;
+    /* Darker background for nav */
+    border-bottom: 2px solid #2d3748;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding-top: 0.5rem;
 }
 
-#main-menu.loaded,
-#character-sheet-page.loaded {
-    opacity: 1;
-    pointer-events: all;
-}
-
-
-/* Utility class to hide elements */
-.hidden {
-    display: none;
-}
-
-/* NEW: Character Portrait Style */
-#character-portrait-container {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    border: 3px solid #ecc94b;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: 0 0 10px rgba(236, 201, 75, 0.5);
-    background-color: #2d3748;
-    /* Dark background as fallback */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#character-portrait {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Stat block styles */
-.stat-block {
-    background-color: #2d3748;
-    /* Dark gray */
-    border: 1px solid #4a5568;
-    /* Medium gray border */
-}
-
-.stat-block .modifier {
-    color: #ecc94b;
-    /* Yellow */
-    font-size: 1.75rem;
-    line-height: 1;
-}
-
-.stat-block .score {
-    font-size: 1.125rem;
-}
-
-.stat-block .label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-/* Proficiency/Speed block styles */
-.prof-speed-block {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-}
-
-/* Saving Throw and Skill styles */
-.save-item,
-.skill-item {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-}
-
-.save-item.proficient,
-.skill-item.proficient {
-    background-color: #42412d;
-    /* Dark yellow/olive */
-    border-color: #ecc94b;
-    color: #ecc94b;
-}
-
-.save-item .mod,
-.skill-item .mod {
-    font-size: 0.75rem;
-    color: #a0aec0;
-    /* Lighter gray */
-}
-
-.save-item.proficient .mod,
-.skill-item.proficient .mod {
-    color: #ecc94b;
-}
-
-.save-item .bonus,
-.skill-item .bonus {
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.sense-item {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-}
-
-/* Skill roller styles */
-.skill-rollable {
-    transition: background-color 0.2s;
-    cursor: pointer;
-}
-
-.skill-rollable:hover {
-    background-color: #4a5568;
-    /* Lighter gray on hover */
-}
-
-.skill-rollable.proficient:hover {
-    background-color: #5a593d;
-    /* Lighter olive on hover */
-}
-
-/* NEW: Saving Throw rollable styles */
-.save-rollable {
-    transition: background-color 0.2s;
-    cursor: pointer;
-}
-
-.save-rollable:hover {
-    background-color: #4a5568;
-    /* Lighter gray on hover */
-}
-
-.save-rollable.proficient:hover {
-    background-color: #5a593d;
-    /* Lighter olive on hover */
-}
-
-
-.adv-icon {
-    color: #48bb78;
-    /* Green */
-    font-size: 0.8rem;
-    font-weight: 900;
-    border: 1px solid #48bb78;
-    border-radius: 50%;
-    width: 1.25rem;
-    height: 1.25rem;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1;
-}
-
-.dis-icon {
-    color: #f56565;
-    /* Red */
-    font-size: 0.8rem;
-    font-weight: 900;
-    border: 1px solid #f56565;
-    border-radius: 50%;
-    width: 1.25rem;
-    height: 1.25rem;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1;
-}
-
-/* Navigation Button styles */
 .nav-button {
-    transition: all 0.2s ease-in-out;
     color: #a0aec0;
     /* Gray text */
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
     border-top: 4px solid transparent;
-    /* Transparent top border for active state */
-    padding-bottom: 8px;
-    /* Adjust padding to account for border */
+    border-radius: 0.375rem 0.375rem 0 0;
 }
 
-.nav-button:hover {
-    color: #e2e8f0;
-    /* Light text on hover */
+.nav-button:hover:not(.active) {
+    color: #ecc94b;
+    /* Yellow text on hover */
+    background-color: #2d3748;
 }
 
 .nav-button.active {
     color: #ecc94b;
-    /* Yellow text */
+    /* Active yellow text */
     border-top-color: #ecc94b;
-    /* Yellow top border */
+    /* Active yellow line */
+    background-color: #2d3748;
+    /* Dark gray background for active tab */
 }
 
-/* NEW: Action Roll Button styles */
-.action-roll-button {
-    background-color: #4a5568;
-    /* Gray */
-    color: #e2e8f0;
-    /* Light text */
-    font-weight: 600;
-    font-size: 0.875rem;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid #718096;
-    transition: all 0.2s ease;
+/* Stat Blocks */
+.stat-block,
+.prof-speed-block {
+    background-color: #2d3748;
+    /* Darker gray for blocks */
+    border: 1px solid #4a5568;
 }
 
-.action-roll-button:hover {
-    background-color: #718096;
-    /* Lighter gray */
-    color: #ffffff;
-    border-color: #a0aec0;
-}
-
-/* NEW: Seamless HP Input */
-.hp-input {
-    background-color: transparent;
-    border: none;
-    color: white;
+.stat-block .modifier {
+    font-size: 1.5rem;
+    /* 24px */
     font-weight: 700;
-    font-size: 1.875rem;
-    /* 3xl */
-    line-height: 2.25rem;
-    width: 4rem;
-    /* Adjust width as needed */
+    color: #ecc94b;
+}
+
+.stat-block .score {
+    font-size: 2rem;
+    /* 32px */
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.stat-block .label {
+    font-size: 0.75rem;
+    /* 12px */
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #a0aec0;
+}
+
+/* Saving Throw & Skill Lists */
+.save-item,
+.skill-item {
+    cursor: pointer;
+    transition: background-color 0.15s;
+    user-select: none;
+    /* Prevent text selection on click */
+}
+
+.save-item:hover,
+.skill-item:hover {
+    background-color: #1a202c;
+    /* Even darker hover color */
+}
+
+.save-item .bonus,
+.skill-item .bonus {
+    font-weight: 700;
+    color: #ecc94b;
+    /* Yellow for the bonus value */
+    min-width: 30px;
     text-align: right;
-    padding: 0;
-    margin: 0;
-    /* Hide arrows on number input */
+}
+
+.save-item.proficient .bonus,
+.skill-item.proficient .bonus {
+    color: #38a169;
+    /* Green for proficient bonus */
+}
+
+.save-item .mod,
+.skill-item .mod {
+    color: #a0aec0;
+    /* Gray for the ability abbreviation */
+    font-weight: 500;
+}
+
+.adv-icon,
+.dis-icon {
+    font-size: 0.65rem;
+    font-weight: 900;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+    line-height: 1;
+}
+
+.adv-icon {
+    background-color: #38a169;
+    /* Green */
+    color: #fff;
+}
+
+.dis-icon {
+    background-color: #e53e3e;
+    /* Red */
+    color: #fff;
+}
+
+/* HP/Rest Buttons */
+.hp-mod-button {
+    background-color: #4a5568;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    width: 30px;
+    height: 30px;
+    border-radius: 0.375rem;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.hp-mod-button:hover {
+    background-color: #636b77;
+}
+
+.hp-input,
+.temp-hp-input {
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    width: 80px;
+    border-radius: 0.375rem;
+    text-align: center;
+    /* Hide spin buttons for number input */
     -moz-appearance: textfield;
+}
+
+.temp-hp-input {
+    font-size: 1.25rem;
+    width: 60px;
 }
 
 .hp-input::-webkit-outer-spin-button,
-.hp-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* NEW: Temporary HP Input */
-.temp-hp-input {
-    background-color: #4a5568;
-    /* Slightly lighter gray */
-    border: 1px solid #718096;
-    color: #e2e8f0;
-    /* Light text */
-    font-weight: 600;
-    font-size: 1.125rem;
-    /* lg */
-    line-height: 1.5rem;
-    width: 4rem;
-    text-align: center;
-    padding: 2px 4px;
-    margin: 0;
-    border-radius: 4px;
-    -moz-appearance: textfield;
-}
+.hp-input::-webkit-inner-spin-button,
 .temp-hp-input::-webkit-outer-spin-button,
 .temp-hp-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* NEW: HP Modifier Button Style */
-.hp-mod-button {
-    background-color: #4a5568;
-    color: #e2e8f0;
-    border: 1px solid #718096;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-weight: 900;
-    line-height: 1;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.hp-mod-button:hover {
-    background-color: #718096;
-    color: #ffffff;
-}
-
-
-/* NEW: Critical Hit Card Style */
-.action-card {
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.action-card.crit {
-    border-color: #ecc94b;
-    /* Gold */
-    box-shadow: 0 0 15px 0 rgba(236, 201, 75, 0.5);
-}
-
-/* Feature Card Style */
-.feature-card {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-    transition: transform 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.feature-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* NEW: Inventory Form Styles */
-.inventory-form-field {
-    background-color: #1a202c; /* Darkest background */
-    border: 1px solid #4a5568;
-    color: #e2e8f0;
-    border-radius: 6px;
-    padding: 0.5rem;
-    width: 100%;
-}
-
-/* NEW: Dice Button Styles */
+/* Dice Roller Bar */
 .dice-button-svg {
-    background-color: transparent;
+    background: none;
     border: none;
-    cursor: pointer;
     padding: 0;
-    border-radius: 4px;
-    transition: transform 0.1s ease, background-color 0.2s ease;
+    cursor: pointer;
+    transition: transform 0.1s;
 }
+
 .dice-button-svg:hover {
     transform: scale(1.1);
-    background-color: #2d3748;
-    /* Dark hover */
-}
-.dice-button-svg:active {
-    transform: scale(1.05);
-}
-.dice-button-svg svg {
-    display: block;
 }
 
-/* --- NEW STYLE --- */
-/* NEW: Character Card (Main Menu) */
-.character-card {
-    background-color: #2d3748; /* Same as stat-block */
+/* Action Cards */
+.action-roll-button {
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    min-width: 100px;
+}
+
+/* Inventory Forms & Inputs */
+.form-input {
+    background-color: #1a202c;
     border: 1px solid #4a5568;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    width: 100%;
+    /* Override tailwind defaults if necessary */
+    box-shadow: none;
 }
 
-.character-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border-color: #ecc94b; /* Yellow border on hover */
+.form-input:focus {
+    border-color: #ecc94b;
+    /* Yellow focus ring */
+    box-shadow: 0 0 0 1px #ecc94b;
 }
 
-.character-card .w-16 { /* This is the portrait placeholder */
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%234a5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>');
-    background-size: 60%;
-    background-position: center;
-    background-repeat: no-repeat;
+.coin-input {
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #fff;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    width: 80px;
+    border-radius: 0.375rem;
+    text-align: right;
+    -moz-appearance: textfield;
+}
+
+.coin-mod-button {
+    background-color: #4a5568;
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    width: 25px;
+    height: 25px;
+    border-radius: 0.375rem;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.coin-mod-button:hover {
+    background-color: #636b77;
+}
+
+/* Inventory Item Display */
+.inventory-item-card {
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    transition: border-color 0.15s;
+}
+
+.inventory-item-card:hover {
+    border-color: #ecc94b;
+}
+
+.equip-button {
+    background-color: #38a169;
+    /* Green */
+    color: white;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.equip-button:hover {
+    background-color: #2f855a;
+}
+
+.unequip-button {
+    background-color: #e53e3e;
+    /* Red */
+    color: white;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.unequip-button:hover {
+    background-color: #c53030;
+}
+
+.delete-button {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    /* Gray */
+    transition: color 0.2s;
+}
+
+.delete-button:hover {
+    color: #e53e3e;
+    /* Red hover */
+}
+
+/* Feature Pages Styling */
+.section-title {
+    @apply text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4;
+}
+
+.feature-block {
+    @apply bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700;
+}
+
+.feature-card {
+    @apply bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md;
+}
+
+.feature-name {
+    @apply text-xl font-bold text-white mb-2;
+}
+
+.feature-description {
+    @apply text-sm text-gray-300;
+}
+
+.char-detail-row {
+    @apply flex items-center p-2 border-b border-gray-700 last:border-b-0;
+}
+
+/* Portrait Placeholder */
+#character-portrait-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #2d3748;
+    border: 3px solid #ecc94b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+#character-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Fix for number inputs on WebKit/Chrome for general use */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    /* Firefox */
 }

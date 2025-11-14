@@ -6,832 +6,869 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D&D Character Sheet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="stylesheet" href="style.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-
+    <link rel="stylesheet" href="./style.css">
 </head>
 
-<body class="bg-gray-800 text-white min-h-screen p-4">
+<body class="bg-gray-900 text-gray-200">
 
-    <div id="splash-screen" class="z-50">
-        <div class="loader"></div>
-        <p class="mt-4 text-yellow-400">Loading Character Sheet...</p>
+    <div id="splash-screen">
+        <div id="splash-placeholder">
+            <svg id="splash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s-8-4-8-12V4l8-2 8 2v6c0 8-8 12-8 12z"></path>
+                <path d="M14 9l-4 4-2-2"></path>
+                <path d="M16 16l-3-3 3-3z"></path>
+                <path d="M8 8l3 3-3 3z"></path>
+            </svg>
+        </div>
+        <h1 id="splash-text">The Runes call, Thangrim!</h1>
     </div>
 
-    <div id="app-container" class="max-w-7xl mx-auto bg-gray-700 shadow-2xl rounded-lg p-6 relative" style="display: none;">
+    <div id="main-content" class="min-h-screen p-4 sm:p-8">
 
-        <header class="flex justify-between items-center border-b border-yellow-500 pb-4 mb-6">
-            <input type="text" id="character-name" class="text-3xl font-bold bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none w-1/3 text-yellow-400" placeholder="Character Name">
-            <div class="flex space-x-4 items-center">
-                <input type="text" id="race-class-level" class="text-lg bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none w-64 text-right" placeholder="Race | Class | Level">
-                <button id="login-logout-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm transition duration-150 ease-in-out">
-                    Login
-                </button>
-            </div>
-        </header>
+        <div class="max-w-7xl mx-auto">
 
-        <nav class="flex space-x-2 border-b-4 border-gray-600 mb-6 sticky top-0 bg-gray-700 z-40 p-1 -m-1">
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-main">
-                <i class="fas fa-user-shield mr-2"></i>Main
-            </button>
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-combat">
-                <i class="fas fa-hand-rock mr-2"></i>Combat
-            </button>
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-inventory">
-                <i class="fas fa-boxes mr-2"></i>Inventory
-            </button>
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-features">
-                <i class="fas fa-book-open mr-2"></i>Features
-            </button>
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-notes">
-                <i class="fas fa-sticky-note mr-2"></i>Notes
-            </button>
-            <button class="nav-button p-3 rounded-t-lg font-semibold transition duration-150 ease-in-out hover:bg-gray-600 text-yellow-400" data-page="page-origin">
-                <i class="fas fa-scroll mr-2"></i>Origin
-            </button>
-        </nav>
+            <div id="page-container" class="mb-6">
 
-        <main id="main-content" class="min-h-[70vh]">
+                <div id="page-main" class="page-content space-y-6">
 
-            <section id="page-main" class="page-content grid grid-cols-12 gap-6">
-
-                <div class="col-span-3 space-y-4">
-                    <div class="flex space-x-4">
-                        <div class="stat-box-lg bg-gray-600 p-3 rounded-lg shadow-inner flex-1">
-                            <label class="block text-xs font-semibold uppercase text-gray-400">Armor Class</label>
-                            <input type="number" id="ac-input" class="w-full text-3xl font-extrabold bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none text-center mt-1" value="10">
-                        </div>
-                        <div class="stat-box-lg bg-gray-600 p-3 rounded-lg shadow-inner flex-1">
-                            <label class="block text-xs font-semibold uppercase text-gray-400">Initiative</label>
-                            <input type="number" id="initiative-input" class="w-full text-3xl font-extrabold bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none text-center mt-1" readonly value="0">
-                        </div>
-                        <div class="stat-box-lg bg-gray-600 p-3 rounded-lg shadow-inner flex-1">
-                            <label class="block text-xs font-semibold uppercase text-gray-400">Speed (ft)</label>
-                            <input type="number" id="speed-input" class="w-full text-3xl font-extrabold bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none text-center mt-1" value="30">
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Hit Points</h3>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-gray-300">Max HP</label>
-                            <input type="number" id="max-hp-input" class="w-20 text-lg bg-gray-700 rounded p-1 text-center" value="10">
-                        </div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-gray-300">Current HP</label>
-                            <input type="number" id="current-hp-input" class="w-20 text-2xl font-bold bg-gray-700 rounded p-1 text-center text-red-400" value="10">
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-gray-300">Temp HP</label>
-                            <input type="number" id="temp-hp-input" class="w-20 text-lg bg-gray-700 rounded p-1 text-center text-green-400" value="0">
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Hit Dice</h3>
-                        <div class="flex justify-between items-center">
-                            <input type="text" id="hit-dice-size-input" class="w-1/3 text-lg bg-gray-700 rounded p-1 text-center" placeholder="e.g. d10">
-                            <label class="text-sm font-semibold text-gray-300">Remaining</label>
-                            <input type="number" id="hit-dice-count-input" class="w-1/4 text-lg bg-gray-700 rounded p-1 text-center" value="1">
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Death Saves</h3>
-                        <div class="flex justify-between">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-300 mb-1">Successes</label>
-                                <div class="flex space-x-2">
-                                    <input type="checkbox" id="ds-success-1" class="death-save-checkbox w-6 h-6 rounded text-green-500 bg-gray-700 border-gray-500 focus:ring-green-500" data-type="success">
-                                    <input type="checkbox" id="ds-success-2" class="death-save-checkbox w-6 h-6 rounded text-green-500 bg-gray-700 border-gray-500 focus:ring-green-500" data-type="success">
-                                    <input type="checkbox" id="ds-success-3" class="death-save-checkbox w-6 h-6 rounded text-green-500 bg-gray-700 border-gray-500 focus:ring-green-500" data-type="success">
-                                </div>
+                    <header
+                        class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                        <div class="flex items-center space-x-4">
+                            <div id="character-portrait-container">
+                                <img id="character-portrait" src="" alt="Character Portrait">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-300 mb-1">Failures</label>
-                                <div class="flex space-x-2">
-                                    <input type="checkbox" id="ds-failure-1" class="death-save-checkbox w-6 h-6 rounded text-red-500 bg-gray-700 border-gray-500 focus:ring-red-500" data-type="failure">
-                                    <input type="checkbox" id="ds-failure-2" class="death-save-checkbox w-6 h-6 rounded text-red-500 bg-gray-700 border-gray-500 focus:ring-red-500" data-type="failure">
-                                    <input type="checkbox" id="ds-failure-3" class="death-save-checkbox w-6 h-6 rounded text-red-500 bg-gray-700 border-gray-500 focus:ring-red-500" data-type="failure">
+                                <h1 class="text-4xl font-bold text-yellow-400">Thangrim Ironfist</h1>
+                                <div class="flex items-center space-x-3 text-lg text-gray-400 mt-1">
+                                    <span>Male Mountain Dwarf</span>
+                                    <span class="text-gray-600">|</span>
+                                    <span>Fighter 4</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="col-span-3 space-y-4">
-                    <div id="ability-scores" class="space-y-3">
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="STR">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Strength</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="STR">
-                                    <i class="fas fa-dice-d20"></i>
+                        <div class="flex items-center space-x-4 w-full sm:w-auto">
+                            <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700 w-24 text-center flex-shrink-0">
+                                <div class="text-sm font-medium uppercase text-gray-400">AC</div>
+                                <div id="ac-display" class="text-3xl font-bold text-yellow-400 mt-1">10</div>
+                            </div>
+                            
+                            <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700 flex-grow">
+                                <div class="text-sm font-medium uppercase text-gray-400">Health</div>
+                                
+                                <div class="flex items-center justify-between space-x-2 mt-1">
+                                    <div class="flex items-baseline space-x-2">
+                                        <input type="number" id="current-hp" class="hp-input" value="34">
+                                        <span class="text-xl text-gray-400">/</span>
+                                        <span id="max-hp" class="text-xl text-gray-400">34</span>
+                                    </div>
+                                    <div class="flex space-x-2 items-center">
+                                        <button id="hp-minus-button" class="hp-mod-button" title="Decrease HP by 1">-</button>
+                                        <button id="hp-plus-button" class="hp-mod-button" title="Increase HP by 1">+</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between space-x-2 mt-2 pt-2 border-t border-gray-700">
+                                    <label for="temp-hp" class="text-sm font-semibold text-gray-400">Temp HP</label>
+                                    <input type="number" id="temp-hp" class="temp-hp-input" value="0">
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col space-y-2">
+                                <button id="long-rest-button"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 flex-shrink-0 whitespace-nowrap">
+                                    Long Rest
+                                </button>
+                                <button id="short-rest-button"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 flex-shrink-0 whitespace-nowrap">
+                                    Short Rest
                                 </button>
                             </div>
                         </div>
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="DEX">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Dexterity</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="DEX">
-                                    <i class="fas fa-dice-d20"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="CON">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Constitution</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="CON">
-                                    <i class="fas fa-dice-d20"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="INT">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Intelligence</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="INT">
-                                    <i class="fas fa-dice-d20"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="WIS">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Wisdom</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="WIS">
-                                    <i class="fas fa-dice-d20"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="ability-score-box bg-gray-600 p-3 rounded-lg shadow-inner" data-ability="CHA">
-                            <label class="block text-xs font-semibold uppercase text-yellow-400 border-b border-gray-500 pb-1">Charisma</label>
-                            <div class="flex justify-between items-center mt-1">
-                                <input type="number" class="ability-score-input w-1/4 text-2xl font-bold bg-gray-700 rounded p-1 text-center" value="10">
-                                <span class="ability-modifier text-2xl font-extrabold w-1/4 text-center">0</span>
-                                <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="ability" data-roll-stat="CHA">
-                                    <i class="fas fa-dice-d20"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-span-3 space-y-4">
-                    <div class="stat-box-lg bg-gray-600 p-4 rounded-lg shadow-lg text-center">
-                        <label class="block text-sm font-semibold uppercase text-gray-400">Proficiency Bonus</label>
-                        <input type="number" id="prof-bonus-input" class="w-20 text-4xl font-extrabold bg-transparent border-b border-gray-500 focus:border-yellow-400 focus:outline-none text-center mt-1 mx-auto" value="2">
-                    </div>
-
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Saving Throws</h3>
-                        <div id="saving-throws" class="space-y-2">
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="STR">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Strength</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="STR">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="DEX">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Dexterity</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="DEX">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="CON">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Constitution</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="CON">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="INT">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Intelligence</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="INT">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Wisdom</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="WIS">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center saving-throw-row" data-ability="CHA">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="prof-checkbox w-4 h-4 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                    <span class="ml-2">Charisma</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="save-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="save" data-roll-stat="CHA">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-span-3 space-y-4">
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Passive Scores</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-gray-300">Passive Perception</label>
-                                <span id="passive-perception" class="text-lg font-bold">10</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-gray-300">Passive Investigation</label>
-                                <span id="passive-investigation" class="text-lg font-bold">10</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-gray-300">Passive Insight</label>
-                                <span id="passive-insight" class="text-lg font-bold">10</span>
-                            </div>
-                        </div>
-                    </div>
+                    </header>
                     
-                    <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                        <h3 class="text-sm font-semibold uppercase text-yellow-400 mb-2 border-b border-gray-500 pb-1">Skills</h3>
-                        <div id="skills-list" class="space-y-2">
-                            <div class="flex justify-between items-center skill-row" data-skill="acrobatics" data-ability="DEX">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Acrobatics (DEX)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="acrobatics">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="animal-handling" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Animal Handling (WIS)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="animal-handling">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="arcana" data-ability="INT">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Arcana (INT)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="arcana">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="athletics" data-ability="STR">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Athletics (STR)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="athletics">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">+5</div>
+                            <div class="score">20</div>
+                            <div class="label mt-1">Strength</div>
+                        </div>
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">+0</div>
+                            <div class="score">11</div>
+                            <div class="label mt-1">Dexterity</div>
+                        </div>
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">+2</div>
+                            <div class="score">14</div>
+                            <div class="label mt-1">Constitution</div>
+                        </div>
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">+1</div>
+                            <div class="score">12</div>
+                            <div class="label mt-1">Intelligence</div>
+                        </div>
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">+0</div>
+                            <div class="score">11</div>
+                            <div class="label mt-1">Wisdom</div>
+                        </div>
+                        <div class="stat-block rounded-lg p-4 text-center">
+                            <div class="modifier">-1</div>
+                            <div class="score">9</div>
+                            <div class="label mt-1">Charisma</div>
+                        </div>
+
+                        <div
+                            class="prof-speed-block rounded-lg p-4 text-center flex flex-col justify-center">
+                            <div class="text-2xl font-bold text-yellow-400">+2</div>
+                            <div class="text-sm font-semibold uppercase mt-1">Proficiency Bonus</div>
+                        </div>
+
+                        <div
+                            class="prof-speed-block rounded-lg p-4 text-center flex flex-col justify-center">
+                            <div class="text-2xl font-bold">25 <span class="text-base">ft.</span></div>
+                            <div class="text-sm font-semibold uppercase mt-1">Walking Speed</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                                <h2 class="text-2xl font-bold text-yellow-400">Saving Throws</h2>
+                                <div id="save-roll-display" class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono">
+                                    Roll Result
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="deception" data-ability="CHA">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Deception (CHA)</span>
+                            <ul class="space-y-2">
+                                <li class="save-item proficient save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Strength Save" data-modifier="7" data-stat="STR">
+                                    <span class="font-bold"><span class="mod mr-2">(STR)</span> Strength</span>
+                                    <span class="bonus" id="str-save-bonus">+7</span>
+                                </li>
+                                <li class="save-item save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Dexterity Save" data-modifier="0" data-stat="DEX">
+                                    <span class="font-bold"><span class="mod mr-2">(DEX)</span> Dexterity</span>
+                                    <span class="bonus" id="dex-save-bonus">+0</span>
+                                </li>
+                                <li class="save-item proficient save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Constitution Save" data-modifier="4" data-stat="CON">
+                                    <span class="font-bold"><span class="mod mr-2">(CON)</span>
+                                        Constitution</span>
+                                    <span class="bonus" id="con-save-bonus">+4</span>
+                                </li>
+                                <li class="save-item save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Intelligence Save" data-modifier="1" data-stat="INT">
+                                    <span class="font-bold"><span class="mod mr-2">(INT)</span>
+                                        Intelligence</span>
+                                    <span class="bonus" id="int-save-bonus">+1</span>
+                                </li>
+                                <li class="save-item save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Wisdom Save" data-modifier="0" data-stat="WIS">
+                                    <span class="font-bold"><span class="mod mr-2">(WIS)</span> Wisdom</span>
+                                    <span class="bonus" id="wis-save-bonus">+0</span>
+                                </li>
+                                <li class="save-item save-rollable flex justify-between items-center p-3 rounded-lg" data-save-name="Charisma Save" data-modifier="-1" data-stat="CHA">
+                                    <span class="font-bold"><span class="mod mr-2">(CHA)</span> Charisma</span>
+                                    <span class="bonus" id="cha-save-bonus">-1</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div
+                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 space-y-4">
+                            <h2
+                                class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
+                                Senses
+                            </h2>
+                            <div class="sense-item p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-yellow-400">12</div>
+                                <div class="text-sm font-semibold uppercase mt-1">Passive Perception</div>
+                            </div>
+                            <div class="sense-item p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold">11</div>
+                                <div class="text-sm font-semibold uppercase mt-1">Passive Investigation</div>
+                            </div>
+                            <div class="sense-item p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold">12</div>
+                                <div class="text-sm font-semibold uppercase mt-1">Passive Insight</div>
+                            </div>
+                            <div class="text-center text-gray-400">Darkvision 60 ft.</div>
+                        </div>
+
+                        <div
+                            class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                            <h2
+                                class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">
+                                Proficiencies & Languages</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="font-semibold text-gray-400 uppercase text-sm">Armor</h3>
+                                    <p class="text-white">Chain Mail, Heavy Armor, Light Armor, Medium Armor,
+                                        Shields
+                                    </p>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="deception">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+                                <div>
+                                    <h3 class="font-semibold text-gray-400 uppercase text-sm">Weapons</h3>
+                                    <p class="text-white">Martial Weapons, Simple Weapons</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-400 uppercase text-sm">Tools</h3>
+                                    <p class="text-white">Mason's Tools, Smith's Tools</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-400 uppercase text-sm">Languages</h3>
+                                    <p class="text-white">Common, Dwarvish, Giant, Goblin, Khuzdul</p>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="history" data-ability="INT">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">History (INT)</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                        <div
+                            class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                            <h2 class="text-2xl font-bold text-yellow-400 flex-shrink-0">Skills</h2>
+                            
+                            <div id="dice-roller-bar" class="flex justify-center items-center space-x-1 sm:space-x-2 my-2 sm:my-0 sm:mx-4" title="Quick Roll">
+                                <button class="dice-button-svg" data-die="4" title="Roll D4">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <polygon points="20,2 2,38 38,38" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="30" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D4</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="6" title="Roll D6">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <rect x="2" y="2" width="36" height="36" rx="6" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="22" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D6</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="8" title="Roll D8">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <polygon points="20,2 2,20 20,38 38,20" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="22" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D8</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="10" title="Roll D10">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <polygon points="20,2 2,15 8,38 32,38 38,15" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="24" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D10</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="12" title="Roll D12">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <polygon points="20,2 5,14 10,38 30,38 35,14" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="25" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D12</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="20" title="Roll D20">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <polygon points="20,2 2,12 8,30 32,30 38,12" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="22" font-size="14" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D20</text>
+                                    </svg>
+                                </button>
+                                <button class="dice-button-svg" data-die="100" title="Roll D100">
+                                    <svg viewBox="0 0 40 40" width="30" height="30">
+                                        <rect x="2" y="10" width="36" height="20" rx="6" fill="#4A5568" stroke="#A0AEC0" stroke-width="2"/>
+                                        <text x="20" y="22" font-size="10" fill="white" text-anchor="middle" font-weight="bold" dominant-baseline="middle">D100</text>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div id="skill-roll-display"
+                                class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono w-full sm:w-auto mt-2 sm:mt-0 min-w-[150px] text-center">
+                                Roll Result
+                            </div>
+                        </div>
+                        <ul class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2">
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Acrobatics" data-modifier="0" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(DEX)</span> Acrobatics</span>
+                                <span class="bonus">+0</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Animal Handling" data-modifier="0" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(WIS)</span> Animal Handling</span>
+                                <span class="bonus">+0</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Arcana" data-modifier="1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(INT)</span> Arcana</span>
+                                <span class="bonus">+1</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Athletics" data-modifier="5" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(STR)</span> Athletics</span>
+                                <span class="bonus">+5</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Deception" data-modifier="-1" data-roll-type="advantage">
+                                <span class="flex items-center space-x-2">
+                                    <span class="font-bold"><span class="mod mr-2">(CHA)</span> Deception</span>
+                                    <span class="adv-icon" title="Advantage">A</span>
+                                </span>
+                                <span class="bonus">-1</span>
+                            </li>
+                            <li class="skill-item proficient skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="History" data-modifier="3" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(INT)</span> History</span>
+                                <span class="bonus">+3</span>
+                            </li>
+                            <li class="skill-item proficient skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Insight" data-modifier="2" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(WIS)</span> Insight</span>
+                                <span class="bonus">+2</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Intimidation" data-modifier="-1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(CHA)</span> Intimidation</span>
+                                <span class="bonus">-1</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Investigation" data-modifier="1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(INT)</span> Investigation</span>
+                                <span class="bonus">+1</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Medicine" data-modifier="0" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(WIS)</span> Medicine</span>
+                                <span class="bonus">+0</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Nature" data-modifier="1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(INT)</span> Nature</span>
+                                <span class="bonus">+1</span>
+                            </li>
+                            <li class="skill-item proficient skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Perception" data-modifier="2" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(WIS)</span> Perception</span>
+                                <span class="bonus">+2</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Performance" data-modifier="-1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(CHA)</span> Performance</span>
+                                <span class="bonus">-1</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Persuasion" data-modifier="-1" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(CHA)</span> Persuasion</span>
+                                <span class="bonus">-1</span>
+                            </li>
+                            <li class="skill-item proficient skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Religion" data-modifier="3" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(INT)</span> Religion</span>
+                                <span class="bonus">+3</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Sleight of Hand" data-modifier="0" data-roll-type="advantage">
+                                <span class="flex items-center space-x-2">
+                                    <span class="font-bold"><span class="mod mr-2">(DEX)</span> Sleight of
+                                        Hand</span>
+                                    <span class="adv-icon" title="Advantage">A</span>
+                                </span>
+                                <span class="bonus">+0</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Stealth" data-modifier="0" data-roll-type="disadvantage">
+                                <span class="flex items-center space-x-2">
+                                    <span class="font-bold"><span class="mod mr-2">(DEX)</span> Stealth</span>
+                                    <span class="dis-icon" title="Disadvantage">D</span>
+                                </span>
+                                <span class="bonus">+0</span>
+                            </li>
+                            <li class="skill-item skill-rollable flex justify-between items-center p-3 rounded-lg"
+                                data-skill-name="Survival" data-modifier="0" data-roll-type="normal">
+                                <span class="font-bold"><span class="mod mr-2">(WIS)</span> Survival</span>
+                                <span class="bonus">+0</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+                <div id="page-actions" class="page-content hidden">
+                    <div
+                        class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
+
+                        <div
+                            class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                            <h2 class="text-3xl font-bold text-yellow-400">Actions</h2>
+                            <div id="action-roll-display"
+                                class="bg-gray-900 border border-gray-700 rounded-md px-4 py-2 text-sm text-yellow-300 font-mono w-full sm:w-auto mt-3 sm:mt-0 text-center sm:text-left min-h-[40px]">
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="history">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+                        </div>
+
+                        <div class="space-y-8">
+
+                            <div>
+                                <h3
+                                    class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
+                                    Actions</h3>
+                                <div class="space-y-4" id="actions-list">
+
+                                    <div id="unarmed-strike-card"
+                                        class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                                            <h4 class="text-xl font-bold text-white">Unarmed Strike</h4>
+                                        </div>
+
+                                        <div
+                                            class="flex flex-col sm:flex-row items-center gap-4 mb-3 text-center">
+                                            <div class="grid grid-cols-3 gap-4 flex-grow">
+                                                <div>
+                                                    <div class="text-xs font-bold uppercase text-gray-400">Range
+                                                    </div>
+                                                    <div class="text-lg font-semibold">5ft. <span
+                                                            class="text-sm text-gray-400">(Reach)</span></div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs font-bold uppercase text-gray-400">Hit / DC
+                                                    </div>
+                                                    <div class="text-lg font-semibold text-yellow-300">+7</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs font-bold uppercase text-gray-400">Damage
+                                                    </div>
+                                                    <div class="text-lg font-semibold">6 + 5</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex space-x-2 flex-shrink-0 mt-3 sm:mt-0">
+                                                <button class="action-roll-button" data-roll="1d20+7"
+                                                    data-roll-name="Unarmed Hit" data-roll-type="hit">Roll
+                                                    Hit</button>
+                                                <button class="action-roll-button" data-roll="6"
+                                                    data-roll-name="Unarmed Dmg" data-roll-type="static"
+                                                    data-attack-type="Melee">Show
+                                                    Damage</button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="text-xs font-bold uppercase text-gray-400">Notes</div>
+                                            <p class="text-sm text-gray-300">Instead of using a weapon to make a
+                                                melee
+                                                attack, you can use a punch, kick, head-butt, or similar forceful
+                                                blow.
+                                                In game terms, this is an Unarmed Strike—a melee attack that
+                                                involves you
+                                                using your body to damage, grapple, or shove a target within 5 feet
+                                                of
+                                                you.
+                                                Whenever you use your Unarmed Strike, choose one of the following
+                                                options for its effect.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="insight" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Insight (WIS)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="insight">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+
+                            <div>
+                                <h3
+                                    class="text-2xl font-semibold text-yellow-300 border-b border-gray-600 pb-2 mb-3">
+                                    Bonus Actions</h3>
+                                <div class="space-y-4" id="bonus-actions-list">
+                                    
+                                    <div id="giants-might-card"
+                                        class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                                            <h4 class="text-xl font-bold text-white">Giant's Might</h4>
+                                            <div class="flex space-x-2 mt-2 sm:mt-0">
+                                                <span id="giants-might-status"
+                                                    class="text-xs font-semibold bg-gray-700 text-gray-300 px-2 py-1 rounded-full">Inactive</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-3 gap-4 flex-grow mb-3 text-center">
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Action</div>
+                                                <div class="text-lg font-semibold">Bonus Action</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Extra Damage</div>
+                                                <div class="text-lg font-semibold">1d6</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Duration</div>
+                                                <div class="text-lg font-semibold">Manual (1 min/10 Rnds)</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <div class="text-xs font-bold uppercase text-gray-400">Rules</div>
+                                            <p class="text-sm text-gray-300">
+                                                You become Large, gain **advantage on Strength checks/saves**, and once on each of your turns, one attack deals an **extra 1d6 damage** on a hit. <span class="text-gray-500">(TCoE)</span>
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700 space-x-2">
+                                            <div class="text-sm font-semibold flex-grow">Uses: <span id="giants-might-uses"
+                                                    class="text-yellow-400 font-bold">2</span>/2 (Resets Long Rest)</div>
+                                            <button id="deactivate-giants-might"
+                                                class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 text-white disabled:opacity-50 hidden transition duration-200"
+                                                title="Manually end the effect">Deactivate</button>
+                                            <button id="activate-giants-might"
+                                                class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Activate</button>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                                            <h4 class="text-xl font-bold text-white">Second Wind</h4>
+                                        </div>
+
+                                        <div class="grid grid-cols-3 gap-4 flex-grow mb-3 text-center">
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Action</div>
+                                                <div class="text-lg font-semibold">Bonus Action</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Heal</div>
+                                                <div class="text-lg font-semibold">1d10+4 HP</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Rest</div>
+                                                <div class="text-lg font-semibold">Short/Long</div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="text-xs font-bold uppercase text-gray-400">Notes</div>
+                                            <p class="text-sm text-gray-300">You use a **Bonus Action** to regain Hit Points equal to 1d10 plus your Fighter level (4). If you fail the check for Tactical Mind, this feature's use is not expended.</p>
+                                        </div>
+										<div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700 space-x-2">
+                                            <div class="text-sm font-semibold flex-grow">Uses: <span id="second-wind-uses"
+                                                    class="text-yellow-400 font-bold">1</span>/1 (Resets Short/Long Rest)</div>
+                                            <button id="second-wind-button"
+                                                class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Heal</button>
+                                        </div>
+                                    </div>
+                                    <div id="fire-rune-card"
+                                        class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                                            <h4 class="text-xl font-bold text-white">Fire Rune</h4>
+                                            <div class="flex space-x-2 mt-2 sm:mt-0">
+                                                <span class="text-xs font-semibold bg-gray-700 text-gray-300 px-2 py-1 rounded-full">Passive: Prof in Smith's Tools</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-3 gap-4 flex-grow mb-3 text-center">
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Action</div>
+                                                <div class="text-lg font-semibold">Bonus Action</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Effect</div>
+                                                <div class="text-lg font-semibold">Restrained (DC 15 STR)</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Range</div>
+                                                <div class="text-lg font-semibold">60 ft.</div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="text-xs font-bold uppercase text-gray-400">Notes</div>
+                                            <p class="text-sm text-gray-300">
+                                                You touch a creature within 60 ft. Target must succeed on a **DC 15 Strength saving throw** or be **Restrained** for 1 minute (or until concentration breaks or you dismiss it). <span class="text-gray-500">(TCoE)</span>
+                                            </p>
+                                        </div>
+
+                                        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700 space-x-2">
+                                            <div class="text-sm font-semibold flex-grow">Uses: <span id="fire-rune-uses"
+                                                    class="text-yellow-400 font-bold">1</span>/1 (Resets Short/Long Rest)</div>
+                                            <button id="fire-rune-button"
+                                                class="action-roll-button bg-purple-600 hover:bg-purple-700 border-purple-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Activate</button>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                                            <h4 class="text-xl font-bold text-white">Action Surge</h4>
+                                        </div>
+
+                                        <div class="grid grid-cols-3 gap-4 flex-grow mb-3 text-center">
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Action</div>
+                                                <div class="text-lg font-semibold">None (Free)</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Effect</div>
+                                                <div class="text-lg font-semibold">1 Extra Action</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-bold uppercase text-gray-400">Rest</div>
+                                                <div class="text-lg font-semibold">Short/Long</div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="text-xs font-bold uppercase text-gray-400">Notes</div>
+                                            <p class="text-sm text-gray-300">
+                                                On your turn, you can take one additional action on top of your regular action and possible bonus action. <span class="text-gray-500">(PHB)</span>
+                                            </p>
+                                        </div>
+
+                                        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700 space-x-2">
+                                            <div class="text-sm font-semibold flex-grow">Uses: <span id="action-surge-uses"
+                                                    class="text-yellow-400 font-bold">1</span>/1 (Resets Short/Long Rest)</div>
+                                            <button id="action-surge-button"
+                                                class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Use</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                            </div>
+                        </div>
+                        </div>
+                </div>
+                <div id="page-features" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-6">
+
+                            <div class="feature-block">
+                                <h2 class="section-title">Racial Features (Mountain Dwarf)</h2>
+                                <div class="space-y-4">
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Dwarven Resilience</h3>
+                                        <p class="feature-description">Advantage on saving throws against poison, and you have resistance against poison damage.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Dwarven Combat Training</h3>
+                                        <p class="feature-description">Proficiency with the battleaxe, handaxe, light hammer, and warhammer.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Stonecunning</h3>
+                                        <p class="feature-description">Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check. (This applies to the 'History' skill rollable on the main page).</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="intimidation" data-ability="CHA">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Intimidation (CHA)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="intimidation">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+                            
+                            <div class="feature-block">
+                                <h2 class="section-title">Feats & Invocations</h2>
+                                <div class="space-y-4">
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Great Weapon Fighting</h3>
+                                        <p class="feature-description">When you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property to gain this benefit.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Eldritch Adept (Eyes of the Rune Keeper)</h3>
+                                        <p class="feature-description">You can read all writing. (Note: This is an Invocation obtained via the Eldritch Adept feat, granting the ability to comprehend any language written down.)</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="investigation" data-ability="INT">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Investigation (INT)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="investigation">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="medicine" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Medicine (WIS)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="medicine">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+
+                            <div class="feature-block">
+                                <h2 class="section-title">Weapon Masteries</h2>
+                                <div class="space-y-4">
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Warhammer (Push)</h3>
+                                        <p class="feature-description">Once per turn, when you hit a creature with this weapon as part of the Attack action, you can force the target to make a DC 15 Strength saving throw. On a failed save, you can push the target 10 feet away from you.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Greataxe (Cleave)</h3>
+                                        <p class="feature-description">Once per turn, when you hit a creature with this weapon as part of the Attack action, and the creature is within 5 feet of a second creature, you can make a free attack roll against the second creature, using the same modifier as the first attack. The damage roll uses a d4.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Handaxe (Vex)</h3>
+                                        <p class="feature-description">When you hit a creature with this weapon, you gain advantage on your next attack roll against that target before the end of your next turn.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="nature" data-ability="INT">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Nature (INT)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="nature">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="perception" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Perception (WIS)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="perception">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+
+                        </div>
+                        <div class="space-y-6">
+                            <div class="feature-block">
+                                <h2 class="section-title">Fighter Class Features</h2>
+                                <div class="space-y-4">
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Fighting Style: Great Weapon Fighting</h3>
+                                        <p class="feature-description">Reroll 1s and 2s on two-handed damage rolls (already covered in Feats section).</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Tactical Mind (Level 2)</h3>
+                                        <p class="feature-description">When you attempt to use Second Wind, Action Surge, or Giant's Might, you can make a DC 10 Wisdom saving throw. On a success, the use of the feature is not expended. This check is made by the system automatically.</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Extra Attack (Level 5) - Currently not gained</h3>
+                                        <p class="feature-description">The character is currently Fighter Level 4. They gain Extra Attack at Level 5.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="performance" data-ability="CHA">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Performance (CHA)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="performance">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="persuasion" data-ability="CHA">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Persuasion (CHA)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="persuasion">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="religion" data-ability="INT">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Religion (INT)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="religion">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="sleight-of-hand" data-ability="DEX">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Sleight of Hand (DEX)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="sleight-of-hand">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="stealth" data-ability="DEX">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Stealth (DEX)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="stealth">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center skill-row" data-skill="survival" data-ability="WIS">
-                                <div class="flex items-center">
-                                    <select class="prof-level-select w-6 h-6 rounded text-yellow-500 bg-gray-700 border-gray-500 focus:ring-yellow-500">
-                                        <option value="0">?</option>
-                                        <option value="1">P</option>
-                                        <option value="2">E</option>
-                                    </select>
-                                    <span class="ml-2">Survival (WIS)</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="skill-modifier font-bold mr-2 text-lg">+0</span>
-                                    <button class="roll-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-1 px-2 rounded-full transition duration-150 ease-in-out roll-d20" data-roll-type="skill" data-roll-stat="survival">
-                                        <i class="fas fa-dice-d20"></i>
-                                    </button>
+
+                            <div class="feature-block">
+                                <h2 class="section-title">Rune Knight Features (Rune Carver)</h2>
+                                <div class="space-y-4">
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Cloud Rune</h3>
+                                        <p class="feature-description">Passive: Advantage on Dexterity (Sleight of Hand) and Charisma (Deception) checks. <br> Active: When a creature you see within 30 ft. is hit by an attack, you can use your **reaction** to cause that attack to hit a different creature within 30 ft. of the original target (you can choose yourself). <br><span class="text-gray-500 font-semibold">1 Use / Short or Long Rest.</span></p>
+                                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                                            <div class="text-sm font-semibold">Uses: <span id="cloud-rune-uses" class="text-yellow-400 font-bold">1</span>/1</div>
+                                            <button id="cloud-rune-button"
+                                                class="action-roll-button bg-blue-600 hover:bg-blue-700 border-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed text-xs transition duration-200">Use Reaction</button>
+                                        </div>
+                                    </div>
+                                    <div class="feature-card">
+                                        <h3 class="feature-name">Fire Rune</h3>
+                                        <p class="feature-description">Passive: Proficiency with Smith's Tools. <br> Active: You gain the Fire Rune Bonus Action (Restrain target). <br><span class="text-gray-500 font-semibold">1 Use / Short or Long Rest.</span></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div id="page-inventory" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            </section>
-
-            <section id="page-combat" class="page-content hidden">
-                <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-8 space-y-4">
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Attacks & Spellcasting</h2>
+                        <div class="space-y-6">
                             
-                            <div id="attacks-list" class="space-y-3">
+                            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Coinage</h2>
+                                <div class="space-y-3">
+                                    <div class="coin-row flex items-center justify-between" data-coin="platinum">
+                                        <span class="text-lg font-semibold w-1/4">Platinum (PP)</span>
+                                        <input type="number" id="platinum-amount" class="coin-input text-right" value="0" min="0">
+                                        <div class="flex space-x-1 ml-4">
+                                            <button class="coin-mod-button" data-type="platinum" data-action="minus">-</button>
+                                            <button class="coin-mod-button" data-type="platinum" data-action="plus">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="coin-row flex items-center justify-between" data-coin="gold">
+                                        <span class="text-lg font-semibold w-1/4">Gold (GP)</span>
+                                        <input type="number" id="gold-amount" class="coin-input text-right" value="150" min="0">
+                                        <div class="flex space-x-1 ml-4">
+                                            <button class="coin-mod-button" data-type="gold" data-action="minus">-</button>
+                                            <button class="coin-mod-button" data-type="gold" data-action="plus">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="coin-row flex items-center justify-between" data-coin="electrum">
+                                        <span class="text-lg font-semibold w-1/4">Electrum (EP)</span>
+                                        <input type="number" id="electrum-amount" class="coin-input text-right" value="0" min="0">
+                                        <div class="flex space-x-1 ml-4">
+                                            <button class="coin-mod-button" data-type="electrum" data-action="minus">-</button>
+                                            <button class="coin-mod-button" data-type="electrum" data-action="plus">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="coin-row flex items-center justify-between" data-coin="silver">
+                                        <span class="text-lg font-semibold w-1/4">Silver (SP)</span>
+                                        <input type="number" id="silver-amount" class="coin-input text-right" value="250" min="0">
+                                        <div class="flex space-x-1 ml-4">
+                                            <button class="coin-mod-button" data-type="silver" data-action="minus">-</button>
+                                            <button class="coin-mod-button" data-type="silver" data-action="plus">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="coin-row flex items-center justify-between" data-coin="copper">
+                                        <span class="text-lg font-semibold w-1/4">Copper (CP)</span>
+                                        <input type="number" id="copper-amount" class="coin-input text-right" value="500" min="0">
+                                        <div class="flex space-space-x-1 ml-4">
+                                            <button class="coin-mod-button" data-type="copper" data-action="minus">-</button>
+                                            <button class="coin-mod-button" data-type="copper" data-action="plus">+</button>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
                             
-                            <div class="mt-6 pt-4 border-t border-gray-500">
-                                <h3 class="text-lg font-semibold text-yellow-400 mb-2">Add New Attack</h3>
-                                <form id="add-attack-form" class="grid grid-cols-4 gap-4">
-                                    <input type="text" id="attack-name-input" placeholder="Name (e.g., Longsword)" class="col-span-4 p-2 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none">
-                                    <select id="attack-stat-input" class="p-2 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none">
-                                        <option value="">Attack Stat (e.g., STR)</option>
-                                        <option value="STR">Strength</option>
-                                        <option value="DEX">Dexterity</option>
-                                        <option value="CON">Constitution</option>
-                                        <option value="INT">Intelligence</option>
-                                        <option value="WIS">Wisdom</option>
-                                        <option value="CHA">Charisma</option>
-                                        <option value="Custom">Custom Modifier</option>
+                            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Add New Weapon</h2>
+                                <form id="add-weapon-form" class="space-y-4">
+                                    <input type="text" id="weapon-name" placeholder="Weapon Name (e.g., Warhammer)" required class="form-input">
+                                    <input type="text" id="weapon-damage-dice" placeholder="Damage (e.g., 1d10, 2d6)" required class="form-input">
+                                    <input type="text" id="weapon-damage-type" placeholder="Damage Type (e.g., Bludgeoning)" required class="form-input">
+                                    <input type="text" id="weapon-properties" placeholder="Properties (e.g., Heavy, Two-Handed, Reach)" class="form-input">
+                                    <select id="weapon-attack-stat" class="form-input">
+                                        <option value="STR">Attack Stat: Strength</option>
+                                        <option value="DEX">Attack Stat: Dexterity</option>
                                     </select>
-                                    <input type="text" id="attack-damage-input" placeholder="Damage Roll (e.g., 1d8+3 Piercing)" class="col-span-2 p-2 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none">
-                                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 rounded transition duration-150 ease-in-out">Add Attack</button>
+                                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition duration-200">Add Weapon</button>
+                                </form>
+                            </div>
+
+                            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Add New Armor</h2>
+                                <form id="add-armor-form" class="space-y-4">
+                                    <input type="text" id="armor-name" placeholder="Armor Name (e.g., Chain Mail)" required class="form-input">
+                                    <input type="number" id="armor-base-ac" placeholder="Base AC (e.g., 16)" required class="form-input" min="0">
+                                    <input type="text" id="armor-type" placeholder="Type (e.g., Heavy, Medium, Light)" required class="form-input">
+                                    <input type="text" id="armor-modifier" placeholder="Modifier (e.g., +DEX, +2 Max)" class="form-input">
+                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200">Add Armor</button>
                                 </form>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-span-4 space-y-4">
-                        <div class="stat-box-lg bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <label class="block text-sm font-semibold uppercase text-gray-400">Spell Save DC</label>
-                            <span id="spell-save-dc" class="block text-4xl font-extrabold text-center mt-2">10</span>
-                            <select id="spell-casting-stat-input" class="w-full text-lg bg-gray-700 rounded p-1 text-center mt-3 focus:border-yellow-400 focus:outline-none">
-                                <option value="None">None</option>
-                                <option value="INT">INT</option>
-                                <option value="WIS">WIS</option>
-                                <option value="CHA">CHA</option>
-                            </select>
-                        </div>
-                        <div class="stat-box-lg bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <label class="block text-sm font-semibold uppercase text-gray-400">Spell Attack Bonus</label>
-                            <span id="spell-attack-bonus" class="block text-4xl font-extrabold text-center mt-2">+0</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="page-inventory" class="page-content hidden">
-                <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-4 space-y-4">
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Currency</h2>
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Copper (CP)</label>
-                                    <input type="number" id="cp-input" class="currency-input w-24 text-lg bg-gray-700 rounded p-1 text-center" value="0">
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Silver (SP)</label>
-                                    <input type="number" id="sp-input" class="currency-input w-24 text-lg bg-gray-700 rounded p-1 text-center" value="0">
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Electrum (EP)</label>
-                                    <input type="number" id="ep-input" class="currency-input w-24 text-lg bg-gray-700 rounded p-1 text-center" value="0">
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Gold (GP)</label>
-                                    <input type="number" id="gp-input" class="currency-input w-24 text-lg bg-gray-700 rounded p-1 text-center" value="0">
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Platinum (PP)</label>
-                                    <input type="number" id="pp-input" class="currency-input w-24 text-lg bg-gray-700 rounded p-1 text-center" value="0">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Encumbrance</h2>
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Total Weight Carried (lb)</label>
-                                    <span id="total-weight" class="text-lg font-bold">0</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-semibold text-gray-300">Carrying Capacity</label>
-                                    <span id="carrying-capacity" class="text-lg font-bold">150</span>
-                                </div>
-                                <p id="encumbrance-status" class="text-center mt-3 text-sm font-semibold text-green-400">Normal</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-span-8 space-y-4">
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Inventory</h2>
-                            
-                            <form id="add-item-form" class="grid grid-cols-12 gap-3 mb-6 p-3 bg-gray-700 rounded-md">
-                                <input type="text" id="item-name-input" placeholder="Item Name" class="col-span-6 p-2 rounded bg-gray-800 border border-gray-500 focus:border-yellow-400 focus:outline-none">
-                                <input type="number" id="item-quantity-input" placeholder="Qty" class="col-span-2 p-2 rounded bg-gray-800 border border-gray-500 focus:border-yellow-400 focus:outline-none" value="1" min="1">
-                                <input type="number" id="item-weight-input" placeholder="Weight (lb)" class="col-span-2 p-2 rounded bg-gray-800 border border-gray-500 focus:border-yellow-400 focus:outline-none" value="0" min="0">
-                                <button type="submit" class="col-span-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 rounded transition duration-150 ease-in-out">Add Item</button>
-                            </form>
-
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-500">
-                                    <thead class="bg-gray-700">
-                                        <tr>
-                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider w-1/2">Item Name</th>
-                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-300 uppercase tracking-wider w-1/6">Qty</th>
-                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-300 uppercase tracking-wider w-1/6">Weight (lb)</th>
-                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-300 uppercase tracking-wider w-1/6">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="inventory-list-table-body" class="bg-gray-600 divide-y divide-gray-700">
-                                        <tr id="inventory-placeholder">
-                                            <td colspan="4" class="px-4 py-4 whitespace-nowrap text-sm text-gray-400 text-center italic">Your inventory is empty.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="page-features" class="page-content hidden">
-                <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-6 space-y-4">
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Class & Racial Features</h2>
-                            
-                            <form id="add-feature-form" class="flex space-x-2 mb-4">
-                                <input type="text" id="feature-name-input" placeholder="Feature Name" class="flex-1 p-2 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none">
-                                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 px-4 rounded transition duration-150 ease-in-out">Add Feature</button>
-                            </form>
-
-                            <div id="features-list" class="space-y-3">
-                                <p id="features-placeholder" class="text-gray-400 text-center italic">No features added yet.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-span-6 space-y-4">
-                        <div class="bg-gray-600 p-4 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Trackable Resources & Abilities</h2>
-                            
-                            <div id="giants-might-tracker" class="border border-gray-500 p-3 rounded-md mb-4 bg-gray-700">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-lg font-semibold text-red-400">Giant's Might</span>
-                                    <div class="flex items-center space-x-2">
-                                        <label class="text-sm font-semibold">Uses:</label>
-                                        <input type="number" id="giants-might-uses" class="w-16 text-lg bg-gray-800 rounded p-1 text-center" value="0" min="0">
-                                        <button id="giants-might-toggle" class="w-20 bg-green-500 hover:bg-green-600 text-white font-bold py-1 rounded transition duration-150 ease-in-out" data-active="false">Activate</button>
-                                    </div>
-                                </div>
-                                <div id="giants-might-status" class="text-center text-sm font-semibold text-gray-400">Status: Inactive</div>
-                            </div>
-                            
-                            <div id="action-surge-tracker" class="border border-gray-500 p-3 rounded-md mb-4 bg-gray-700">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-lg font-semibold text-yellow-400">Action Surge</span>
-                                    <div class="flex items-center space-x-2">
-                                        <label class="text-sm font-semibold">Uses:</label>
-                                        <input type="number" id="action-surge-uses" class="w-16 text-lg bg-gray-800 rounded p-1 text-center" value="1" min="0">
-                                        <button id="action-surge-expend" class="w-20 bg-red-500 hover:bg-red-600 text-white font-bold py-1 rounded transition duration-150 ease-in-out">Expend</button>
-                                    </div>
+                        <div class="space-y-6">
+                            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Equipped Items</h2>
+                                <div id="equipped-list" class="space-y-3">
+                                    <p class="text-gray-400 italic">No equipment currently equipped.</p>
                                 </div>
                             </div>
 
-                            <div class="bg-gray-700 p-3 rounded-md border border-gray-500">
-                                <h3 class="text-lg font-semibold text-blue-400 mb-2 border-b border-gray-600 pb-1">Runes (Giant/Fighter)</h3>
-                                <div id="rune-trackers" class="space-y-3">
-                                    <div class="flex justify-between items-center rune-tracker" data-rune="fire">
-                                        <span class="font-semibold">Fire Rune</span>
-                                        <div class="flex space-x-2 items-center">
-                                            <label class="text-sm font-semibold text-gray-400">Uses:</label>
-                                            <input type="number" class="rune-uses-input w-12 text-lg bg-gray-800 rounded p-1 text-center" value="1" min="0">
-                                            <button class="rune-expend-button bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-150 ease-in-out">Expend</button>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between items-center rune-tracker" data-rune="frost">
-                                        <span class="font-semibold">Frost Rune</span>
-                                        <div class="flex space-x-2 items-center">
-                                            <label class="text-sm font-semibold text-gray-400">Uses:</label>
-                                            <input type="number" class="rune-uses-input w-12 text-lg bg-gray-800 rounded p-1 text-center" value="1" min="0">
-                                            <button class="rune-expend-button bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-150 ease-in-out">Expend</button>
-                                        </div>
-                                    </div>
+                            <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                                <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Other Inventory</h2>
+                                <div id="unequipped-list" class="space-y-3">
+                                    <p class="text-gray-400 italic">Inventory is loading...</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
-            
-            <section id="page-notes" class="page-content hidden">
-                <div class="bg-gray-600 p-4 rounded-lg shadow-lg min-h-[70vh]">
-                    <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">General Notes</h2>
-                    <textarea id="notes-textarea" class="w-full h-[60vh] p-3 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none resize-none" placeholder="Write down important quest details, NPCs, locations, or anything else here..."></textarea>
-                    <p class="text-sm text-gray-400 mt-2">Notes are automatically saved.</p>
-                </div>
-            </section>
-            
-            <section id="page-origin" class="page-content hidden">
-                <div class="bg-gray-600 p-4 rounded-lg shadow-lg min-h-[70vh]">
-                    <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-gray-500 pb-2">Origin, Personality, and Background</h2>
-                    <textarea id="origin-story-textarea" class="w-full h-[60vh] p-3 rounded bg-gray-700 border border-gray-500 focus:border-yellow-400 focus:outline-none resize-none" placeholder="Describe your character's background, personality traits, ideals, bonds, and flaws here..."></textarea>
-                    <p class="text-sm text-gray-400 mt-2">Origin story is automatically saved.</p>
-                </div>
-            </section>
-			<div id="roll-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center hidden transition-opacity duration-300 ease-out opacity-0" aria-modal="true" role="dialog">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full border-4 border-yellow-500 transform transition-transform duration-300 ease-out scale-95">
-                    <h3 id="roll-modal-title" class="text-2xl font-bold text-yellow-400 mb-4 border-b border-gray-600 pb-2">Dice Roll</h3>
-                    <div class="text-center mb-4">
-                        <p class="text-lg text-gray-300" id="roll-modal-type">Rolling Ability Check (STR):</p>
-                        <p class="text-6xl font-extrabold text-white my-3" id="roll-modal-result">20</p>
-                        <p class="text-sm font-semibold text-gray-400" id="roll-modal-breakdown">Roll: 18 + Mod: +2 = 20</p>
-                        <p class="text-sm font-semibold text-gray-400 mt-2 hidden" id="roll-modal-damage-result"></p>
+                <div id="page-background" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                            <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Characteristics</h2>
+                            <div class="space-y-3">
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Alignment:</span>
+                                    <span class="text-white w-2/3">Lawful Good</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Gender:</span>
+                                    <span class="text-white w-2/3">Male</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Age:</span>
+                                    <span class="text-white w-2/3">135</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Height:</span>
+                                    <span class="text-white w-2/3">4' 6"</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Weight:</span>
+                                    <span class="text-white w-2/3">180 lbs</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Hair:</span>
+                                    <span class="text-white w-2/3">Black, Braided</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Eyes:</span>
+                                    <span class="text-white w-2/3">Brown</span>
+                                </div>
+                                <div class="char-detail-row">
+                                    <span class="font-semibold text-gray-400 w-1/3">Skin:</span>
+                                    <span class="text-white w-2/3">Tanned, Weathered</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                            <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Origin Story</h2>
+                            <textarea id="origin-story-textarea" rows="15" class="w-full h-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-gray-200 focus:ring-yellow-500 focus:border-yellow-500 placeholder-gray-500"></textarea>
+                        </div>
                     </div>
-                    <div class="flex justify-end space-x-3">
-                        <button id="roll-modal-close" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">Close</button>
+                </div>
+                <div id="page-notes" class="page-content hidden">
+                    <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+                        <h2 class="text-2xl font-bold text-yellow-400 border-b border-gray-700 pb-3 mb-4">Campaign Notes</h2>
+                        <textarea id="notes-textarea" rows="20" class="w-full h-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-gray-200 focus:ring-yellow-500 focus:border-yellow-500 placeholder-gray-500"></textarea>
                     </div>
+                </div>
                 </div>
             </div>
-
-        </main>
-
-        <footer class="mt-6 pt-4 border-t border-gray-600 text-center text-gray-500 text-sm">
-            <p>D&D Character Sheet powered by Custom Logic.</p>
-        </footer>
-
-        <div id="status-alert" class="fixed top-4 right-4 bg-red-800 text-white p-3 rounded-lg shadow-lg hidden z-50 transition-opacity duration-300" role="alert">
-            <span id="status-message">Error: Could not connect to database. Using Local Storage.</span>
-        </div>
-
+    </div>
+    <div id="persistence-status" class="fixed bottom-0 left-0 w-full bg-gray-900 text-center p-2 text-sm border-t border-gray-700 z-50">
+        <span id="persistence-message" class="text-gray-400">Loading persistence status...</span>
     </div>
 
-    <script src="app.js"></script>
-    
+    <script type="module" src="./app.js"></script>
 </body>
 
 </html>
