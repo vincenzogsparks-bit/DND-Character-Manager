@@ -1,3 +1,4 @@
+console.log("THIS IS THE NEW FILE - 11:56 AM");
 // --- FIX: Import modules from their correct URLs ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; 
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
