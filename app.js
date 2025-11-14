@@ -1651,11 +1651,16 @@ function handleNavigation(event) {
 
     // *** MODIFICATION START: Use ELEMENTS cache to show target page ***
     // 3. Show the target page
-    const targetPage = ELEMENTS[targetPageId.replace(/-/g, '')]; // e.g., 'page-main' -> 'pageMain'
+    // --- THIS IS THE FIX ---
+    // Convert 'page-actions' to 'pageActions'
+    const targetPageKey = targetPageId.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
+    const targetPage = ELEMENTS[targetPageKey]; 
+    // --- END OF FIX ---
+    
     if (targetPage) {
         targetPage.classList.remove('hidden');
     } else {
-        console.warn(`Internal character sheet page with ID ${targetPageId} not found in ELEMENTS.`);
+        console.warn(`Internal character sheet page with ID ${targetPageId} (key: ${targetPageKey}) not found in ELEMENTS.`);
         // Fallback to default
         if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.remove('hidden');
     }
