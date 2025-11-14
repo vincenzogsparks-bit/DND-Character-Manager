@@ -2383,6 +2383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // *** END NEW ***
     });
     
+	
     // *** NEW: Class Change Listener (For Saving Throw Auto-Selection) ***
     if (ELEMENTS.createCharClass) ELEMENTS.createCharClass.addEventListener('change', handleClassChange);
     
