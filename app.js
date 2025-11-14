@@ -83,7 +83,13 @@ function onDomLoaded() {
 function cacheDomElements() {
     // Splash & Main Content
     ELEMENTS.splashScreen = document.getElementById('splash-screen');
-    ELEMENTS.mainContent = document.getElementById('main-content');
+    ELEMENTS.mainContent = document.getElementById('main-content'); // This is the sheet's content area
+    
+    // --- NEWLY CACHED ELEMENTS ---
+    ELEMENTS.mainMenu = document.getElementById('main-menu');
+    ELEMENTS.characterSheetPage = document.getElementById('character-sheet-page');
+    ELEMENTS.menuBtnLoadChar = document.getElementById('menu-btn-load-char');
+    // --- END NEW ---
     
     // Navigation
     ELEMENTS.navContainer = document.getElementById('main-navigation');
@@ -167,6 +173,11 @@ function setupEventListeners() {
     // Splash Screen
     ELEMENTS.splashScreen.addEventListener('click', handleSplashClick, { once: true });
 
+    // --- NEW LISTENER ---
+    // Main Menu Button
+    ELEMENTS.menuBtnLoadChar.addEventListener('click', handleLoadCharacter);
+    // --- END NEW ---
+
     // Main Content Click/Input Listeners (Event Delegation)
     ELEMENTS.mainContent.addEventListener('click', handleMainContentClick);
     ELEMENTS.mainContent.addEventListener('input', handleMainContentInput);
@@ -210,15 +221,33 @@ function setInitialUiState() {
 /**
  * Fades out the splash screen and fades in the main content.
  */
+// --- MODIFIED FUNCTION ---
 function handleSplashClick() {
     ELEMENTS.splashScreen.style.opacity = '0';
-    ELEMENTS.mainContent.classList.add('loaded');
+    
+    // NEW: Show the main menu instead of the character sheet
+    ELEMENTS.mainMenu.classList.remove('hidden');
     
     // After the fade-out, remove the splash screen from the DOM
     setTimeout(() => {
         ELEMENTS.splashScreen.remove();
     }, 500); // Matches the CSS transition duration
 }
+// --- END MODIFICATION ---
+
+/**
+ * --- NEW FUNCTION ---
+ * Hides the main menu and shows the character sheet.
+ */
+function handleLoadCharacter() {
+    ELEMENTS.mainMenu.classList.add('hidden');
+    ELEMENTS.characterSheetPage.classList.remove('hidden');
+    
+    // We can now "load" the main content of the sheet
+    // This re-uses the original fade-in logic by adding the 'loaded' class
+    ELEMENTS.mainContent.classList.add('loaded');
+}
+// --- END NEW FUNCTION ---
 
 /**
  * Handles all click events within the main content area using delegation.
@@ -401,7 +430,7 @@ function handleSaveRoll(saveElement) {
         resultText += " (Adv)";
     }
 
-    displayRoll(ELEMENTS.saveRollDisplay, resultText, roll.isCrit, roll.isFumble);
+    displayRoll(ELEMENTS.saveRollDisplay, resultText, roll.isCrit, roll.sFumble);
 }
 
 /**
