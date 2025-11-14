@@ -1623,11 +1623,33 @@ function showAppPage(pageIdToShow) {
 }
 
 
-// --- *** NEW NAVIGATION LOGIC *** ---
+// --- *** NEW NAVIGATION LOGIC (FROM OLD FILE) *** ---
+
+/**
+ * Re-usable function to show a specific page by its ID.
+ * This is part of the logic from your old file.
+ * @param {string} pageId - The ID of the page element to show.
+ */
+function showPage(pageId) {
+    // 1. Hide all page content
+    const pages = document.querySelectorAll('.page-content');
+    pages.forEach(page => {
+        page.classList.add('hidden');
+    });
+
+    // 2. Show the target page
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.remove('hidden');
+    } else {
+        console.warn(`showPage: Page with ID ${pageId} not found. Defaulting to main.`);
+        document.getElementById('page-main').classList.remove('hidden');
+    }
+}
 
 /**
  * Handles clicks on the main character sheet navigation bar.
- * This is the new, simplified logic focusing only on the Actions button.
+ * This is the robust logic adapted from your old file.
  */
 function handleNavigation(event) {
     const clickedButton = event.target.closest('.nav-button');
@@ -1635,43 +1657,21 @@ function handleNavigation(event) {
 
     const targetPageId = clickedButton.dataset.page; // e.g., "page-actions"
     
-    // 1. Hide ALL internal pages
-    if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.add('hidden');
-    if (ELEMENTS.pageActions) ELEMENTS.pageActions.classList.add('hidden');
-    if (ELEMENTS.pageFeatures) ELEMENTS.pageFeatures.classList.add('hidden');
-    if (ELEMENTS.pageBackground) ELEMENTS.pageBackground.classList.add('hidden');
-    if (ELEMENTS.pageInventory) ELEMENTS.pageInventory.classList.add('hidden');
-    if (ELEMENTS.pageNotes) ELEMENTS.pageNotes.classList.add('hidden');
-
-    // 2. Deactivate all buttons
-    document.querySelectorAll('.nav-button').forEach(button => {
+    // 1. Deactivate all buttons
+    const buttons = document.querySelectorAll('.nav-button');
+    buttons.forEach(button => {
         button.classList.remove('active');
         button.style.borderTopWidth = '4px';
         button.style.borderTopColor = 'transparent';
     });
 
-    // 3. Show the correct page and activate the correct button
-    if (targetPageId === 'page-actions') {
-        // --- ACTIONS BUTTON LOGIC ---
-        if (ELEMENTS.pageActions) {
-            ELEMENTS.pageActions.classList.remove('hidden');
-        }
-        clickedButton.classList.add('active');
-        clickedButton.style.borderTopWidth = '4px';
-        clickedButton.style.borderTopColor = '#ecc94b';
-    } else {
-        // --- DEFAULT (MAIN) BUTTON LOGIC ---
-        if (ELEMENTS.pageMain) {
-            ELEMENTS.pageMain.classList.remove('hidden');
-        }
-        // Find and activate the "Main" button specifically
-        const mainButton = document.querySelector('.nav-button[data-page="page-main"]');
-        if (mainButton) {
-            mainButton.classList.add('active');
-            mainButton.style.borderTopWidth = '4px';
-            mainButton.style.borderTopColor = '#ecc94b';
-        }
-    }
+    // 2. Activate the clicked button
+    clickedButton.classList.add('active');
+    clickedButton.style.borderTopWidth = '4px';
+    clickedButton.style.borderTopColor = '#ecc94b';
+
+    // 3. Show the target page (using the robust function)
+    showPage(targetPageId);
 }
 // --- *** END NEW NAVIGATION LOGIC *** ---
 
