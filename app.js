@@ -674,7 +674,6 @@ function renderCharacterList(snapshot) {
     });
 }
 
-
 // --- FIREBASE AND INITIALIZATION ---
 
 /**
@@ -1630,31 +1629,17 @@ function handleNavigation(event) {
     const clickedButton = event.target.closest('.nav-button');
     if (!clickedButton) return; 
 
-    // *** MODIFICATION START: Scroll to top for "new page" feel ***
-    window.scrollTo(0, 0);
-    // *** MODIFICATION END ***
-
     const targetPageId = clickedButton.dataset.page;
     
-    // Define all internal content page IDs based on the navigation buttons
-    const allInternalPages = [
-        'page-main', 
-        'page-actions', 
-        'page-features', 
-        'page-background', 
-        'page-inventory', 
-        'page-notes'
-    ];
-    
+    // *** MODIFICATION START: Use ELEMENTS cache for reliable hide/show ***
     // 1. Hide ALL internal pages
-    allInternalPages.forEach(pageId => {
-        const page = document.getElementById(pageId);
-        if (page) {
-             page.classList.add('hidden');
-        } else {
-            console.warn(`Internal character sheet page with ID ${pageId} not found.`);
-        }
-    });
+    if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.add('hidden');
+    if (ELEMENTS.pageActions) ELEMENTS.pageActions.classList.add('hidden');
+    if (ELEMENTS.pageFeatures) ELEMENTS.pageFeatures.classList.add('hidden');
+    if (ELEMENTS.pageBackground) ELEMENTS.pageBackground.classList.add('hidden');
+    if (ELEMENTS.pageInventory) ELEMENTS.pageInventory.classList.add('hidden');
+    if (ELEMENTS.pageNotes) ELEMENTS.pageNotes.classList.add('hidden');
+    // *** MODIFICATION END ***
 
     // 2. Deactivate all buttons
     document.querySelectorAll('.nav-button').forEach(button => {
@@ -1664,11 +1649,17 @@ function handleNavigation(event) {
         button.style.borderTopColor = 'transparent';
     });
 
+    // *** MODIFICATION START: Use ELEMENTS cache to show target page ***
     // 3. Show the target page
-    const targetPage = document.getElementById(targetPageId);
+    const targetPage = ELEMENTS[targetPageId.replace(/-/g, '')]; // e.g., 'page-main' -> 'pageMain'
     if (targetPage) {
         targetPage.classList.remove('hidden');
+    } else {
+        console.warn(`Internal character sheet page with ID ${targetPageId} not found in ELEMENTS.`);
+        // Fallback to default
+        if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.remove('hidden');
     }
+    // *** MODIFICATION END ***
 
     // 4. Activate the clicked button
     clickedButton.classList.add('active');
@@ -1678,7 +1669,6 @@ function handleNavigation(event) {
 
 
 // --- SPLASH SCREEN LOGIC (Unchanged) ---
-
 function showMainContent() {
     ELEMENTS.splashScreen.style.opacity = '0';
     setTimeout(() => {
@@ -1763,6 +1753,7 @@ function handleClassChange() {
         }
     });
 }
+
 
 /**
  * NEW: Reads all data from the creator form and returns a new character data object.
@@ -2098,6 +2089,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pageCharacterSheet: document.getElementById('page-character-sheet'),
         pageCharacterCreation: document.getElementById('page-character-creation'),
         
+        // *** NEW: Add internal page divs for navigation ***
+        pageMain: document.getElementById('page-main'),
+        pageActions: document.getElementById('page-actions'),
+        pageFeatures: document.getElementById('page-features'),
+        pageBackground: document.getElementById('page-background'),
+        pageInventory: document.getElementById('page-inventory'),
+        pageNotes: document.getElementById('page-notes'),
+        // *** END NEW ***
+        
         // App-level Navigation Buttons
         characterListContainer: document.getElementById('character-list-container'),
         createCharacterButton: document.getElementById('create-character-button'),
@@ -2210,9 +2210,8 @@ document.addEventListener('DOMContentLoaded', () => {
         createScoreCon: document.getElementById('create-score-con'),
         createScoreInt: document.getElementById('create-score-int'),
         createScoreWis: document.getElementById('create-score-wis'),
-        // *** MODIFICATION START: Fix typo ***
-        createScoreCha: document.getElementById('create-score-cha'),
-        // *** MODIFICATION END ***
+        // *** MODIFICATION: Fixed typo from 'create-char-cha' to 'create-score-cha' ***
+        createScoreCha: document.getElementById('create-score-cha'), 
         createModStr: document.getElementById('create-mod-str'), 
         createModDex: document.getElementById('create-mod-dex'), 
         createModCon: document.getElementById('create-mod-con'), 
