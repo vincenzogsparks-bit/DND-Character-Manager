@@ -707,8 +707,7 @@ const renderActions = () => {
     if (equippedWeapons.length === 0) {
         // Hide the static Unarmed Strike card if there are no equipped weapons for simplicity
         // document.getElementById('unarmed-strike-card').classList.remove('hidden');
-        ELEMENTS.actionsList.innerHTML = '';
-        document.getElementById('unarmed-strike-card').classList.add('hidden'); 
+        document.getElementById('unarmed-strike-card').classList.remove('hidden'); 
     } else {
         document.getElementById('unarmed-strike-card').classList.add('hidden'); // Hide if weapons are equipped
     }
@@ -972,7 +971,7 @@ const handleCloudRuneUse = () => {
     // Note: Cloud Rune is a Reaction and does NOT get a Tactical Mind Check (TCoE rules).
 
     // --- Update State ---
-    updateAndSaveState('cloudRuneUses', characterState.cloudRuneUses - 1);
+    updateAndSaveState('cloud-rune-uses', characterState.cloudRuneUses - 1);
     renderResources();
 };
 
@@ -1032,8 +1031,6 @@ const debouncedNotesChange = debounce(() => {
 const debouncedOriginStoryChange = debounce(() => {
     updateAndSaveState('originStory', ELEMENTS.originStoryTextarea.value);
 }, 1000);
-
-// ... (Rest of the script will follow in Chunk 3)
 
 /**
  * ==============================================================================================
@@ -1137,12 +1134,19 @@ const handleCoinButton = (event) => {
 
 /**
  * Handles the click event for the splash screen to fade it out.
+ * FIX: Immediately drops z-index to unblock clicks on main content.
  */
 const handleSplashScreenClick = () => {
+    // 1. Start the fade out.
     ELEMENTS.splashScreen.style.opacity = '0';
-    ELEMENTS.mainContent.style.opacity = '1';
     
-    // Hide and remove event listener after transition
+    // 2. IMMEDIATE FIX: Drop the z-index so clicks pass through to the content underneath.
+    ELEMENTS.splashScreen.style.zIndex = '-1'; 
+    
+    // 3. Start the main content fade in.
+    ELEMENTS.mainContent.style.opacity = '1';
+
+    // 4. Clean up after transition ends (1 second).
     setTimeout(() => {
         ELEMENTS.splashScreen.classList.add('hidden');
         ELEMENTS.splashScreen.removeEventListener('click', handleSplashScreenClick);
