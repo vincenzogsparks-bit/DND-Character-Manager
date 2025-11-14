@@ -225,8 +225,10 @@ function setInitialUiState() {
 function handleSplashClick() {
     ELEMENTS.splashScreen.style.opacity = '0';
     
-    // NEW: Show the main menu instead of the character sheet
+    // NEW: Show the main menu
     ELEMENTS.mainMenu.classList.remove('hidden');
+    // NEW: Trigger the fade-in animation
+    ELEMENTS.mainMenu.classList.add('loaded');
     
     // After the fade-out, remove the splash screen from the DOM
     setTimeout(() => {
@@ -240,12 +242,13 @@ function handleSplashClick() {
  * Hides the main menu and shows the character sheet.
  */
 function handleLoadCharacter() {
+    // NEW: Hide the main menu
     ELEMENTS.mainMenu.classList.add('hidden');
+    // NEW: Show the character sheet page container
     ELEMENTS.characterSheetPage.classList.remove('hidden');
     
-    // We can now "load" the main content of the sheet
-    // This re-uses the original fade-in logic by adding the 'loaded' class
-    ELEMENTS.mainContent.classList.add('loaded');
+    // NEW: Trigger the fade-in for the character sheet
+    ELEMENTS.characterSheetPage.classList.add('loaded');
 }
 // --- END NEW FUNCTION ---
 

@@ -73,18 +73,39 @@ body {
     /* Subtle glow effect */
 }
 
-/* Main content - hidden by default */
+/* --- MODIFICATION START --- */
+/* Main content - NO LONGER handles the fade-in. */
 #main-content {
+    /*
     opacity: 0;
     transition: opacity 0.5s ease-in;
     pointer-events: none;
-    /* Disable interaction until loaded */
+    */
+    /* Disable interaction until loaded - This logic is moved below */
 }
 
-#main-content.loaded {
+/* #main-content.loaded {
+    opacity: 1;
+    pointer-events: all;
+} 
+*/
+
+/* NEW: Page containers for fade-in transitions */
+/* These are the top-level containers for the menu and the sheet */
+#main-menu,
+#character-sheet-page {
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+    pointer-events: none;
+}
+
+#main-menu.loaded,
+#character-sheet-page.loaded {
     opacity: 1;
     pointer-events: all;
 }
+/* --- MODIFICATION END --- */
+
 
 /* Utility class to hide elements */
 .hidden {
