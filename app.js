@@ -1,3 +1,338 @@
+/*
+ * D&D 5e Character Sheet - app.js
+ *
+ * This file contains all the JavaScript logic for the interactive character sheet.
+ * It's loaded as a module by index.html.
+ */
+
+// --- MODULE-LEVEL STATE ---
+
+// Character data is namespaced under this object.
+// This is what will be saved to and loaded from "the cloud" (localStorage).
+const CHARACTER_DATA = {
+    // Core Stats
+    hp: 34,
+    temp_hp: 0,
+    
+    // Resource Trackers
+    uses_second_wind: 3,
+    uses_action_surge: 1,
+    uses_giants_might: 2,
+    uses_fire_rune: 1,
+    uses_cloud_rune: 1,
+    uses_tactical_mind: 3,
+    
+    // Status Effects
+    status_giants_might: false,
+    
+    // Inventory & Coin
+    inventory: [], // This will hold objects for weapons, armor, etc.
+    coin: { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 },
+    
+    // Notes & Background
+    notes: "",
+    origin_story: ""
+};
+
+// A constant defining the base data structure for a new item.
+const ITEM_DEFAULTS = {
+    weapon: {
+        id: "", name: "", type: "Weapon", equipped: false, proficient: true,
+        attackType: "Melee", damage: "1d8", damageType: "Bludgeoning",
+        reach: 5, weight: 2, cost: 1, properties: "Versatile (1d10)",
+        notes: ""
+    },
+    armor: {
+        id: "", name: "", type: "Armor", equipped: false, armorType: "Heavy",
+        baseAC: 18, maxDex: 0, isProficient: true, stealthDisadvantage: true,
+        weight: 65, cost: 1500, notes: ""
+    }
+};
+
+// A simple in-memory cache for DOM elements to avoid repeated queries.
+const ELEMENTS = {};
+
+// --- INITIALIZATION ---
+
+/**
+ * Runs when the DOM is fully loaded.
+ * Caches elements, sets up listeners, and initializes the UI.
+ */
+function onDomLoaded() {
+    console.log("DOM loaded. Initializing sheet...");
+    
+    // 1. Cache all recurring DOM elements
+    cacheDomElements();
+    
+    // 2. Set up all event listeners
+    setupEventListeners();
+    
+    // 3. Initialize persistence (load data from localStorage)
+    initializePersistence();
+    
+    // 4. Set the initial UI state (e.g., active tab)
+    setInitialUiState();
+    
+    console.log("Sheet initialized.");
+}
+
+/**
+ * Finds and stores all frequently used DOM elements in the ELEMENTS cache.
+ */
+function cacheDomElements() {
+    // --- MERGED FROM MONOLITHIC FILE & NEW LOGIC ---
+    
+    // Page Containers
+    ELEMENTS.splashScreen = document.getElementById('splash-screen');
+    ELEMENTS.mainContent = document.getElementById('main-content');
+    ELEMENTS.mainMenu = document.getElementById('main-menu');
+    ELEMENTS.characterSheetPage = document.getElementById('character-sheet-page');
+    ELEMENTS.pageContainer = document.getElementById('page-container');
+    
+    // Menu Buttons
+    ELEMENTS.loadCharThangrim = document.getElementById('load-char-thangrim');
+    ELEMENTS.returnToMenuButton = document.getElementById('return-to-menu-button');
+
+    // Navigation
+    ELEMENTS.navContainer = document.getElementById('main-navigation');
+    
+    // Header / Core Stats
+    ELEMENTS.currentHpInput = document.getElementById('current-hp');
+    ELEMENTS.maxHpSpan = document.getElementById('max-hp');
+    ELEMENTS.tempHpInput = document.getElementById('temp-hp');
+    ELEMENTS.hpPlusButton = document.getElementById('hp-plus-button');
+    ELEMENTS.hpMinusButton = document.getElementById('hp-minus-button');
+    ELEMENTS.acDisplay = document.getElementById('ac-display');
+    ELEMENTS.longRestButton = document.getElementById('long-rest-button');
+    ELEMENTS.shortRestButton = document.getElementById('short-rest-button');
+    
+    // Roll Displays
+    ELEMENTS.skillRollDisplay = document.getElementById('skill-roll-display');
+    ELEMENTS.saveRollDisplay = document.getElementById('save-roll-display');
+    ELEMENTS.actionRollDisplay = document.getElementById('action-roll-display');
+    
+    // Dice Buttons
+    ELEMENTS.diceRollerBar = document.getElementById('dice-roller-bar');
+    
+    // Resource Trackers (Spans)
+    ELEMENTS.secondWindUses = document.getElementById('second-wind-uses');
+    ELEMENTS.actionSurgeUses = document.getElementById('action-surge-uses');
+    ELEMENTS.giantsMightUses = document.getElementById('giants-might-uses');
+    ELEMENTS.fireRuneUses = document.getElementById('fire-rune-uses');
+    ELEMENTS.cloudRuneUses = document.getElementById('cloud-rune-uses');
+    ELEMENTS.tacticalMindUses = document.getElementById('tactical-mind-uses');
+    
+    // Resource Buttons
+    ELEMENTS.rollSecondWind = document.getElementById('roll-second-wind');
+    ELEMENTS.useActionSurge = document.getElementById('use-action-surge');
+    ELEMENTS.activateGiantsMight = document.getElementById('activate-giants-might');
+    ELEMENTS.deactivateGiantsMight = document.getElementById('deactivate-giants-might');
+    ELEMENTS.rollFireRuneDmg = document.getElementById('roll-fire-rune-dmg');
+    ELEMENTS.useCloudRune = document.getElementById('use-cloud-rune');
+    ELEMENTS.rollTacticalMind = document.getElementById('roll-tactical-mind');
+    
+    // Status Indicators
+    ELEMENTS.giantsMightStatus = document.getElementById('giants-might-status');
+    ELEMENTS.giantsMightCard = document.getElementById('giants-might-card');
+
+    // Saves & Skills
+    ELEMENTS.skillsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
+    ELEMENTS.savesContainer = document.querySelector('.bg-gray-800 ul.space-y-2');
+    ELEMENTS.strSaveBonus = document.getElementById('str-save-bonus');
+    ELEMENTS.dexSaveBonus = document.getElementById('dex-save-bonus');
+    ELEMENTS.conSaveBonus = document.getElementById('con-save-bonus');
+    ELEMENTS.intSaveBonus = document.getElementById('int-save-bonus');
+    ELEMENTS.wisSaveBonus = document.getElementById('wis-save-bonus');
+    ELEMENTS.chaSaveBonus = document.getElementById('cha-save-bonus');
+    
+    // Text Areas (for saving)
+    ELEMENTS.notesTextarea = document.getElementById('notes-content-textarea');
+    ELEMENTS.originStoryTextarea = document.getElementById('origin-story-textarea');
+    
+    // Inventory & Coinage
+    ELEMENTS.inventoryListContainer = document.getElementById('inventory-list-container');
+    ELEMENTS.actionsList = document.getElementById('actions-list');
+    ELEMENTS.itemTypeSelect = document.getElementById('item-type-select');
+    ELEMENTS.weaponForm = document.getElementById('weapon-form-container');
+    ELEMENTS.armorForm = document.getElementById('armor-form-container');
+    ELEMENTS.otherForm = document.getElementById('other-form-placeholder');
+    
+    ELEMENTS.coin = {
+        pp_display: document.getElementById('coin-pp-display'),
+        gp_display: document.getElementById('coin-gp-display'),
+        ep_display: document.getElementById('coin-ep-display'),
+        sp_display: document.getElementById('coin-sp-display'),
+        cp_display: document.getElementById('coin-cp-display'),
+        pp_input: document.getElementById('coin-pp-input'),
+        gp_input: document.getElementById('coin-gp-input'),
+        ep_input: document.getElementById('coin-ep-input'),
+        sp_input: document.getElementById('coin-sp-input'),
+        cp_input: document.getElementById('coin-cp-input'),
+        add: document.getElementById('coin-add-button'),
+        remove: document.getElementById('coin-remove-button'),
+        clear: document.getElementById('coin-clear-button')
+    };
+
+    // Inventory Forms (Weapon)
+    ELEMENTS.weaponFormInputs = {
+        name: document.getElementById('weapon-name'),
+        proficiency: document.getElementById('weapon-proficiency'),
+        attackType: document.getElementById('weapon-attack-type'),
+        damage: document.getElementById('weapon-damage'),
+        damageType: document.getElementById('weapon-damage-type'),
+        reach: document.getElementById('weapon-reach'),
+        weight: document.getElementById('weapon-weight'),
+        cost: document.getElementById('weapon-cost'),
+        properties: document.getElementById('weapon-properties'),
+        notes: document.getElementById('weapon-notes'),
+        addButton: document.getElementById('add-weapon-button')
+    };
+    
+    // Inventory Forms (Armor)
+    ELEMENTS.armorFormInputs = {
+        name: document.getElementById('armor-name'),
+        type: document.getElementById('armor-type'),
+        ac: document.getElementById('armor-ac'),
+        maxDex: document.getElementById('armor-max-dex'),
+        isProficient: document.getElementById('armor-is-proficient'),
+        weight: document.getElementById('armor-weight'),
+        cost: document.getElementById('armor-cost'),
+        stealthDisadvantage: document.getElementById('armor-stealth-disadvantage'),
+        notes: document.getElementById('armor-notes'),
+        addButton: document.getElementById('add-armor-button')
+    };
+}
+
+/**
+ * Attaches all the necessary event listeners to the cached elements.
+ */
+function setupEventListeners() {
+    // --- MERGED FROM MONOLITHIC FILE & NEW LOGIC ---
+
+    // Splash Screen (BUG FIX/DIAGNOSTIC LOGGING ADDED HERE)
+    ELEMENTS.splashScreen.addEventListener('click', handleSplashClick, { once: true });
+
+    // Page Navigation
+    if (ELEMENTS.loadCharThangrim) {
+        ELEMENTS.loadCharThangrim.addEventListener('click', handleLoadCharacter);
+    }
+    if (ELEMENTS.returnToMenuButton) {
+        ELEMENTS.returnToMenuButton.addEventListener('click', handleReturnToMenu);
+    }
+
+    // Sheet Internal Navigation
+    ELEMENTS.navContainer.addEventListener('click', handleNavigation);
+    
+    // HP & Rest
+    ELEMENTS.currentHpInput.addEventListener('input', handleHpChange);
+    ELEMENTS.tempHpInput.addEventListener('input', handleHpChange);
+    ELEMENTS.hpPlusButton.addEventListener('click', () => modifyHp(1));
+    ELEMENTS.hpMinusButton.addEventListener('click', () => modifyHp(-1));
+    ELEMENTS.longRestButton.addEventListener('click', handleLongRest);
+    ELEMENTS.shortRestButton.addEventListener('click', handleShortRest);
+    
+    // Textarea listeners (Debounced for performance)
+    ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
+    ELEMENTS.originStoryTextarea.addEventListener('input', debouncedOriginStoryChange);
+    
+    // Rollable Listeners (Event Delegation)
+    ELEMENTS.skillsContainer.addEventListener('click', (e) => {
+        const skillElement = e.target.closest('.skill-rollable');
+        if (skillElement) handleSkillRoll(skillElement);
+    });
+    
+    ELEMENTS.savesContainer.addEventListener('click', (e) => {
+        const saveElement = e.target.closest('.save-rollable');
+        if (saveElement) handleSaveRoll(saveElement);
+    });
+    
+    ELEMENTS.diceRollerBar.addEventListener('click', (e) => {
+        const dieButton = e.target.closest('.dice-button-svg');
+        if (dieButton) handleQuickDieRoll(dieButton);
+    });
+    
+    // Action Page Listeners (Delegation)
+    document.getElementById('page-actions').addEventListener('click', (e) => {
+        const actionButton = e.target.closest('.action-roll-button');
+        if (actionButton) handleActionRoll(actionButton);
+    });
+
+    // Inventory Page Listeners
+    ELEMENTS.itemTypeSelect.addEventListener('change', () => handleInventoryFormChange(ELEMENTS.itemTypeSelect.value));
+    ELEMENTS.weaponFormInputs.addButton.addEventListener('click', addNewWeapon);
+    ELEMENTS.armorFormInputs.addButton.addEventListener('click', addNewArmor);
+    
+    // Inventory List (Delegation)
+    ELEMENTS.inventoryListContainer.addEventListener('click', (e) => {
+        const equipButton = e.target.closest('.inventory-equip-button');
+        const deleteButton = e.target.closest('.inventory-delete-button');
+        if (equipButton) {
+            toggleEquipItem(equipButton.dataset.itemId);
+        }
+        if (deleteButton) {
+            deleteItem(deleteButton.dataset.itemId);
+        }
+    });
+    
+    // Coinage
+    ELEMENTS.coin.add.addEventListener('click', () => modifyCoin('add'));
+    ELEMENTS.coin.remove.addEventListener('click', () => modifyCoin('remove'));
+    ELEMENTS.coin.clear.addEventListener('click', clearCoinInputs);
+}
+
+// --- PAGE NAVIGATION HANDLERS (NEW) ---
+
+/**
+ * Fades out the splash screen and fades in the main menu.
+ */
+function handleSplashClick() {
+    console.log("Splash Screen Click Registered. Beginning transition."); // DIAGNOSTIC LOG
+
+    ELEMENTS.splashScreen.style.opacity = '0';
+    
+    // Show the main menu
+    ELEMENTS.mainMenu.classList.remove('hidden');
+    // Trigger the fade-in animation
+    ELEMENTS.mainMenu.classList.add('loaded');
+    
+    // After the fade-out, remove the splash screen from the DOM
+    setTimeout(() => {
+        ELEMENTS.splashScreen.remove();
+    }, 500); // Matches the CSS transition duration
+}
+
+/**
+ * Hides the main menu and shows the character sheet.
+ */
+function handleLoadCharacter() {
+    // Hide the main menu
+    ELEMENTS.mainMenu.classList.add('hidden');
+    ELEMENTS.mainMenu.classList.remove('loaded'); // Prepare for re-fade-in
+    
+    // Show the character sheet page container
+    ELEMENTS.characterSheetPage.classList.remove('hidden');
+    // Trigger the fade-in for the character sheet
+    ELEMENTS.characterSheetPage.classList.add('loaded');
+}
+
+/**
+ * Hides the character sheet and returns to the main menu.
+ */
+function handleReturnToMenu() {
+    // Hide the character sheet
+    ELEMENTS.characterSheetPage.classList.add('hidden');
+    ELEMENTS.characterSheetPage.classList.remove('loaded'); // Prepare for re-fade-in
+    
+    // Show the main menu
+    ELEMENTS.mainMenu.classList.remove('hidden');
+    // Trigger the fade-in for the main menu
+    ELEMENTS.mainMenu.classList.add('loaded');
+
+    // Reset the character sheet to the "Main" tab for next load
+    setInitialUiState();
+}
+
+// --- (End of Chunk 1) ---
 // --- CHARACTER SHEET NAVIGATION & STATE ---
 
 /**
@@ -252,260 +587,7 @@ function handleQuickDieRoll(dieButton) {
     displayRoll(ELEMENTS.skillRollDisplay, resultText);
 }
 
-// --- CHARACTER SHEET NAVIGATION & STATE ---
-
-/**
- * Sets the initial state of the UI on load (e.g., active tab).
- */
-function setInitialUiState() {
-    // Set the default "Main" button to active on load
-    const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
-    if (defaultButton) {
-        defaultButton.classList.add('active');
-    }
-    
-    // Hide all pages except the main one
-    const pages = ELEMENTS.pageContainer.querySelectorAll('.page-content');
-    pages.forEach(page => {
-        if (page.id !== 'page-main') {
-            page.classList.add('hidden');
-        } else {
-            page.classList.remove('hidden');
-        }
-    });
-}
-
-/**
- * Handles page navigation by switching active tabs and showing/hiding pages.
- */
-function handleNavigation(event) {
-    const navButton = event.target.closest('.nav-button');
-    if (!navButton) return;
-
-    const pageId = navButton.dataset.page;
-    if (!pageId) return;
-
-    // 1. Update Navigation Buttons
-    // Remove 'active' from all buttons
-    ELEMENTS.navContainer.querySelectorAll('.nav-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    // Add 'active' to the clicked button
-    navButton.classList.add('active');
-
-    // 2. Show/Hide Page Content
-    // Hide all pages
-    ELEMENTS.pageContainer.querySelectorAll('.page-content').forEach(page => {
-        page.classList.add('hidden');
-    });
-    // Show the target page
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.remove('hidden');
-    } else {
-        console.error(`Navigation error: Page with ID "${pageId}" not found.`);
-        // Show the main page as a fallback
-        document.getElementById('page-main').classList.remove('hidden');
-    }
-}
-
-// --- DEBOUNCED HANDLERS ---
-
-/**
- * Debounce function to limit how often a function can run.
- */
-function debounce(func, delay) {
-    let timeout;
-    return function(...args) {
-        const context = this;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), delay);
-    };
-}
-
-const debouncedNotesChange = debounce((event) => {
-    CHARACTER_DATA.notes = event.target.value;
-    saveCharacterData();
-}, 500);
-
-const debouncedOriginStoryChange = debounce((event) => {
-    CHARACTER_DATA.origin_story = event.target.value;
-    saveCharacterData();
-}, 500);
-
-// --- DICE ROLLING LOGIC ---
-
-/**
- * Rolls a simple die of a given size.
- */
-function rollSimpleDie(size) {
-    return Math.floor(Math.random() * size) + 1;
-}
-
-/**
- * Doubles the dice component (e.g., "1d8+5" -> "2d8+5").
- */
-function doubleDiceInString(diceString) {
-    const diceMatch = diceString.match(/(\d+)d(\d+)/i);
-    if (diceMatch) {
-        const numDice = parseInt(diceMatch[1], 10) * 2;
-        const dieSize = parseInt(diceMatch[2], 10);
-        const remaining = diceString.slice(diceMatch.index + diceMatch[0].length);
-        return `${numDice}d${dieSize}${remaining}`;
-    }
-    return diceString; // Return original if no dice found
-}
-
-/**
- * Rolls a d20 with optional advantage or disadvantage.
- */
-function rollD20(type = 'normal') {
-    const roll1 = rollSimpleDie(20);
-    const roll2 = rollSimpleDie(20);
-    let finalResult, resultText;
-
-    if (type === 'advantage') {
-        finalResult = Math.max(roll1, roll2);
-        resultText = `(${roll1}, ${roll2}) Adv`;
-    } else if (type === 'disadvantage') {
-        finalResult = Math.min(roll1, roll2);
-        resultText = `(${roll1}, ${roll2}) Dis`;
-    } else {
-        finalResult = roll1;
-        resultText = `${roll1}`;
-    }
-
-    return {
-        finalResult: finalResult,
-        resultText: resultText,
-        isCrit: finalResult === 20,
-        isFumble: finalResult === 1
-    };
-}
-
-/**
- * Parses a dice string (e.g., "2d6+3") and rolls the dice.
- * Applies Great Weapon Fighting logic if applicable.
- */
-function rollDiceString(diceString, isGreatWeapon = false) {
-    let numDice = 1;
-    let dieSize = 20;
-    let modifier = 0;
-
-    const modMatch = diceString.match(/[+-]\d+$/);
-    if (modMatch) {
-        modifier = parseInt(modMatch[0], 10);
-        diceString = diceString.slice(0, modMatch.index);
-    }
-
-    const diceMatch = diceString.match(/(\d+)d(\d+)/i);
-    if (diceMatch) {
-        numDice = parseInt(diceMatch[1], 10);
-        dieSize = parseInt(diceMatch[2], 10);
-    } else {
-        // Handle static damage (e.g., "6")
-        const staticDmg = parseInt(diceString, 10);
-        if (!isNaN(staticDmg)) {
-            return { total: staticDmg + modifier, rollText: `${staticDmg}` };
-        }
-    }
-
-    let total = 0;
-    let rolls = [];
-    for (let i = 0; i < numDice; i++) {
-        let roll = rollSimpleDie(dieSize);
-        // Great Weapon Fighting logic
-        if (isGreatWeapon && (roll === 1 || roll === 2)) {
-            roll = 3; // Treat 1s and 2s as 3s
-        }
-        total += roll;
-        rolls.push(roll);
-    }
-
-    return {
-        total: total + modifier,
-        rollText: `(${rolls.join('+')})`
-    };
-}
-
-/**
- * Displays a roll result in a specified element.
- * Applies visual flair for crits/fumbles.
- * Highlights the associated card on a crit.
- */
-function displayRoll(displayElement, text, isCrit = false, isFumble = false, cardElement = null) {
-    displayElement.textContent = text;
-    
-    // Visual flair for crits/fumbles
-    displayElement.style.color = isCrit ? '#ecc94b' : (isFumble ? '#f56565' : '#e2e8f0');
-    displayElement.style.fontWeight = (isCrit || isFumble) ? 'bold' : 'normal';
-
-    // Remove crit glow from all cards
-    document.querySelectorAll('.action-card.crit').forEach(card => card.classList.remove('crit'));
-
-    // Add crit glow to the specific card
-    if (isCrit && cardElement) {
-        cardElement.classList.add('crit');
-    }
-}
-
-// --- CORE ROLLING HANDLERS ---
-
-/**
- * Rolls a skill check based on the clicked skill element.
- */
-function handleSkillRoll(skillElement) {
-    const skillName = skillElement.dataset.skillName;
-    const modifier = parseInt(skillElement.dataset.modifier, 10);
-    const rollType = skillElement.dataset.rollType; // 'normal', 'advantage', 'disadvantage'
-
-    const roll = rollD20(rollType);
-    const total = roll.finalResult + modifier;
-    const resultText = `${skillName}: ${total} [${roll.resultText} + ${modifier}]`;
-
-    displayRoll(ELEMENTS.skillRollDisplay, resultText, roll.isCrit, roll.isFumble);
-}
-
-/**
- * Rolls a saving throw based on the clicked save element.
- */
-function handleSaveRoll(saveElement) {
-    const saveName = saveElement.dataset.saveName;
-    const modifier = parseInt(saveElement.dataset.modifier, 10);
-    const stat = saveElement.dataset.stat; // e.g., "STR"
-    
-    let rollType = 'normal';
-    
-    // Check for Giant's Might advantage
-    if (CHARACTER_DATA.status_giants_might && (stat === "STR" || stat === "CON")) {
-        rollType = 'advantage';
-    }
-
-    const roll = rollD20(rollType);
-    const total = roll.finalResult + modifier;
-    
-    let resultText = `${saveName}: ${total} [${roll.resultText} + ${modifier}]`;
-    if (rollType === 'advantage') {
-        resultText += " (Adv)";
-    }
-
-    displayRoll(ELEMENTS.saveRollDisplay, resultText, roll.isCrit, roll.isFumble);
-}
-
-/**
- * Rolls a generic die from the quick-roll bar.
- */
-function handleQuickDieRoll(dieButton) {
-    const dieSize = parseInt(dieButton.dataset.die, 10);
-    if (isNaN(dieSize)) return;
-
-    const result = rollSimpleDie(dieSize);
-    const resultText = `D${dieSize} Roll: ${result}`;
-    
-    // Display in the skill roll display as it's the most central one
-    displayRoll(ELEMENTS.skillRollDisplay, resultText);
-}
-
+// --- (End of Chunk 2) ---
 // --- ACTION PAGE LOGIC ---
 
 /**
@@ -584,7 +666,7 @@ function rollAttackOrDamage(button, card, rollType) {
         let currentRollString = rollString;
         let isCritical = false;
 
-        // Check for Critical Hit from the previous attack roll (BUG FIX)
+        // Check for Critical Hit from the previous attack roll (BUG FIX #1)
         if (rollType === 'damage' && card && card.classList.contains('crit')) {
             currentRollString = doubleDiceInString(currentRollString);
             isCritical = true;
@@ -897,6 +979,8 @@ function handleShortRest() {
     alert("Short Rest complete! Action Surge and Cloud Rune have been restored.");
 }
 
+// --- (End of Chunk 4) ---
+
 // --- INVENTORY LOGIC (Full Restoration) ---
 
 /**
@@ -946,7 +1030,7 @@ function addNewWeapon() {
     CHARACTER_DATA.inventory.push(newWeapon);
     renderInventory();
     saveCharacterData();
-    updateEquippedActions(); // NEW: Update Actions page
+    updateEquippedActions(); // FIX: Update Actions page
     alert(`Weapon "${newWeapon.name}" added and equipped!`);
 }
 
@@ -975,7 +1059,7 @@ function addNewArmor() {
     CHARACTER_DATA.inventory.push(newArmor);
     renderInventory();
     saveCharacterData();
-    updateEquippedActions(); // NEW: Update Actions page
+    updateEquippedActions(); // FIX: Update Actions page
     alert(`Armor "${newArmor.name}" added and equipped!`);
 }
 
@@ -984,7 +1068,7 @@ function deleteItem(itemId) {
         CHARACTER_DATA.inventory = CHARACTER_DATA.inventory.filter(item => item.id !== itemId);
         renderInventory();
         saveCharacterData();
-        updateEquippedActions(); // NEW: Update Actions page
+        updateEquippedActions(); // FIX: Update Actions page
     }
 }
 
@@ -1005,7 +1089,7 @@ function toggleEquipItem(itemId) {
         
         renderInventory();
         saveCharacterData();
-        updateEquippedActions(); // NEW: Update Actions page
+        updateEquippedActions(); // FIX: Update Actions page
     }
 }
 
@@ -1052,7 +1136,7 @@ function renderInventory() {
 }
 
 /**
- * NEW FEATURE: Generates and updates weapon cards on the Actions page based on equipped inventory items.
+ * FIX: Generates and updates weapon cards on the Actions page based on equipped inventory items.
  */
 function updateEquippedActions() {
     const actionsList = document.getElementById('actions-list');
