@@ -338,7 +338,7 @@ function handleReturnToMenu() {
 /**
  * Sets the initial state of the UI on load (e.g., active tab).
  */
-function setInitialUiState() {
+const setInitialUiState = function() {
     // Set the default "Main" button to active on load
     const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
     if (defaultButton) {
@@ -359,7 +359,7 @@ function setInitialUiState() {
 /**
  * Handles page navigation by switching active tabs and showing/hiding pages.
  */
-function handleNavigation(event) {
+const handleNavigation = function(event) {
     const navButton = event.target.closest('.nav-button');
     if (!navButton) return;
 
@@ -588,6 +588,7 @@ function handleQuickDieRoll(dieButton) {
 }
 
 // --- (End of Chunk 2) ---
+
 // --- ACTION PAGE LOGIC ---
 
 /**
@@ -785,6 +786,7 @@ function consumeResource(resourceName, textElement, buttonElement) {
     return false; // No uses left
 }
 
+// --- (End of Chunk 3) ---
 /**
  * Handles "Cloud Rune" ability.
  * Consumes a use and updates the UI.
