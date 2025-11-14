@@ -73,7 +73,6 @@ body {
     /* Subtle glow effect */
 }
 
-/* --- MODIFICATION START --- */
 /* Main content - NO LONGER handles the fade-in. */
 #main-content {
     /*
@@ -104,7 +103,6 @@ body {
     opacity: 1;
     pointer-events: all;
 }
-/* --- MODIFICATION END --- */
 
 
 /* Utility class to hide elements */
@@ -434,4 +432,26 @@ body {
 }
 .dice-button-svg svg {
     display: block;
+}
+
+/* --- NEW STYLE --- */
+/* NEW: Character Card (Main Menu) */
+.character-card {
+    background-color: #2d3748; /* Same as stat-block */
+    border: 1px solid #4a5568;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.character-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-color: #ecc94b; /* Yellow border on hover */
+}
+
+.character-card .w-16 { /* This is the portrait placeholder */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%234a5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>');
+    background-size: 60%;
+    background-position: center;
+    background-repeat: no-repeat;
 }

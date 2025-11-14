@@ -88,7 +88,8 @@ function cacheDomElements() {
     // --- NEWLY CACHED ELEMENTS ---
     ELEMENTS.mainMenu = document.getElementById('main-menu');
     ELEMENTS.characterSheetPage = document.getElementById('character-sheet-page');
-    ELEMENTS.menuBtnLoadChar = document.getElementById('menu-btn-load-char');
+    // ELEMENTS.menuBtnLoadChar = document.getElementById('menu-btn-load-char'); // This ID no longer exists
+    ELEMENTS.loadCharThangrim = document.getElementById('load-char-thangrim'); // NEW
     // --- END NEW ---
     
     // Navigation
@@ -173,10 +174,13 @@ function setupEventListeners() {
     // Splash Screen
     ELEMENTS.splashScreen.addEventListener('click', handleSplashClick, { once: true });
 
-    // --- NEW LISTENER ---
-    // Main Menu Button
-    ELEMENTS.menuBtnLoadChar.addEventListener('click', handleLoadCharacter);
-    // --- END NEW ---
+    // --- MODIFIED LISTENER ---
+    // Main Menu Button (now the character card)
+    // ELEMENTS.menuBtnLoadChar.addEventListener('click', handleLoadCharacter); // Old button
+    if (ELEMENTS.loadCharThangrim) { // NEW
+        ELEMENTS.loadCharThangrim.addEventListener('click', handleLoadCharacter);
+    }
+    // --- END MODIFICATION ---
 
     // Main Content Click/Input Listeners (Event Delegation)
     ELEMENTS.mainContent.addEventListener('click', handleMainContentClick);
@@ -221,7 +225,6 @@ function setInitialUiState() {
 /**
  * Fades out the splash screen and fades in the main content.
  */
-// --- MODIFIED FUNCTION ---
 function handleSplashClick() {
     ELEMENTS.splashScreen.style.opacity = '0';
     
@@ -235,10 +238,8 @@ function handleSplashClick() {
         ELEMENTS.splashScreen.remove();
     }, 500); // Matches the CSS transition duration
 }
-// --- END MODIFICATION ---
 
 /**
- * --- NEW FUNCTION ---
  * Hides the main menu and shows the character sheet.
  */
 function handleLoadCharacter() {
@@ -250,7 +251,6 @@ function handleLoadCharacter() {
     // NEW: Trigger the fade-in for the character sheet
     ELEMENTS.characterSheetPage.classList.add('loaded');
 }
-// --- END NEW FUNCTION ---
 
 /**
  * Handles all click events within the main content area using delegation.
@@ -575,7 +575,7 @@ function displayRoll(displayElement, text, isCrit = false, isFumble = false) {
     displayElement.textContent = text;
     
     // Simple visual flair for crits/fumbles
-    displayElement.style.color = isCrit ? '#ecc94b' : (isFumble ? '#f56565' : '#e2e8f0');
+    displayElement.style.color = isCrit ? '#ecc94b' : (isFamble ? '#f56565' : '#e2e8f0');
     displayElement.style.fontWeight = (isCrit || isFumble) ? 'bold' : 'normal';
 }
 
