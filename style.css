@@ -120,11 +120,6 @@ body {
     /* Dark gray */
     border: 1px solid #4a5568;
     /* Medium gray border */
-    min-height: 120px; /* <---- FIX: Ensure minimum height for ability scores in creation/sheet */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .stat-block .modifier {
@@ -159,7 +154,8 @@ body {
 
 .save-item.proficient,
 .skill-item.proficient {
-    background-color: #374151; /* CHANGED: Reverted from olive to blue-gray */
+    background-color: #42412d;
+    /* Dark yellow/olive */
     border-color: #ecc94b;
     color: #ecc94b;
 }
@@ -199,7 +195,8 @@ body {
 }
 
 .skill-rollable.proficient:hover {
-    background-color: #4b5563; /* CHANGED: Reverted from olive-hover to blue-gray hover */
+    background-color: #5a593d;
+    /* Lighter olive on hover */
 }
 
 /* NEW: Saving Throw rollable styles */
@@ -214,7 +211,8 @@ body {
 }
 
 .save-rollable.proficient:hover {
-    background-color: #4b5563; /* CHANGED: Reverted from olive-hover to blue-gray hover */
+    background-color: #5a593d;
+    /* Lighter olive on hover */
 }
 
 
@@ -244,7 +242,7 @@ body {
     height: 1.25rem;
     display: inline-flex;
     justify-content: center;
-    align-itemsM: center;
+    align-items: center;
     line-height: 1;
 }
 
@@ -415,10 +413,4 @@ body {
 }
 .dice-button-svg svg {
     display: block;
-}
-/* NEW: Roll History Button Style */
-.roll-history-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    background-color: #2d3748; /* Darker gray when disabled */
 }
