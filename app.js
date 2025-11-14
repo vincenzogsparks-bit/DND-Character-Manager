@@ -85,12 +85,13 @@ function cacheDomElements() {
     ELEMENTS.splashScreen = document.getElementById('splash-screen');
     ELEMENTS.mainContent = document.getElementById('main-content'); // This is the sheet's content area
     
-    // --- NEWLY CACHED ELEMENTS ---
+    // --- Page Containers ---
     ELEMENTS.mainMenu = document.getElementById('main-menu');
     ELEMENTS.characterSheetPage = document.getElementById('character-sheet-page');
-    // ELEMENTS.menuBtnLoadChar = document.getElementById('menu-btn-load-char'); // This ID no longer exists
-    ELEMENTS.loadCharThangrim = document.getElementById('load-char-thangrim'); // NEW
-    // --- END NEW ---
+    
+    // --- Menu Buttons ---
+    ELEMENTS.loadCharThangrim = document.getElementById('load-char-thangrim');
+    ELEMENTS.returnToMenuButton = document.getElementById('return-to-menu-button'); // NEW
     
     // Navigation
     ELEMENTS.navContainer = document.getElementById('main-navigation');
@@ -174,13 +175,14 @@ function setupEventListeners() {
     // Splash Screen
     ELEMENTS.splashScreen.addEventListener('click', handleSplashClick, { once: true });
 
-    // --- MODIFIED LISTENER ---
-    // Main Menu Button (now the character card)
-    // ELEMENTS.menuBtnLoadChar.addEventListener('click', handleLoadCharacter); // Old button
-    if (ELEMENTS.loadCharThangrim) { // NEW
+    // --- Page Navigation Listeners ---
+    if (ELEMENTS.loadCharThangrim) {
         ELEMENTS.loadCharThangrim.addEventListener('click', handleLoadCharacter);
     }
-    // --- END MODIFICATION ---
+    if (ELEMENTS.returnToMenuButton) { // NEW
+        ELEMENTS.returnToMenuButton.addEventListener('click', handleReturnToMenu);
+    }
+    // --- END NEW ---
 
     // Main Content Click/Input Listeners (Event Delegation)
     ELEMENTS.mainContent.addEventListener('click', handleMainContentClick);
@@ -228,9 +230,9 @@ function setInitialUiState() {
 function handleSplashClick() {
     ELEMENTS.splashScreen.style.opacity = '0';
     
-    // NEW: Show the main menu
+    // Show the main menu
     ELEMENTS.mainMenu.classList.remove('hidden');
-    // NEW: Trigger the fade-in animation
+    // Trigger the fade-in animation
     ELEMENTS.mainMenu.classList.add('loaded');
     
     // After the fade-out, remove the splash screen from the DOM
@@ -243,14 +245,35 @@ function handleSplashClick() {
  * Hides the main menu and shows the character sheet.
  */
 function handleLoadCharacter() {
-    // NEW: Hide the main menu
+    // Hide the main menu
     ELEMENTS.mainMenu.classList.add('hidden');
-    // NEW: Show the character sheet page container
-    ELEMENTS.characterSheetPage.classList.remove('hidden');
+    ELEMENTS.mainMenu.classList.remove('loaded'); // Prepare for re-fade-in
     
-    // NEW: Trigger the fade-in for the character sheet
+    // Show the character sheet page container
+    ELEMENTS.characterSheetPage.classList.remove('hidden');
+    // Trigger the fade-in for the character sheet
     ELEMENTS.characterSheetPage.classList.add('loaded');
 }
+
+/**
+ * --- NEW FUNCTION ---
+ * Hides the character sheet and returns to the main menu.
+ */
+function handleReturnToMenu() {
+    // Hide the character sheet
+    ELEMENTS.characterSheetPage.classList.add('hidden');
+    ELEMENTS.characterSheetPage.classList.remove('loaded'); // Prepare for re-fade-in
+    
+    // Show the main menu
+    ELEMENTS.mainMenu.classList.remove('hidden');
+    // Trigger the fade-in for the main menu
+    ELEMENTS.mainMenu.classList.add('loaded');
+
+    // Reset the character sheet to the "Main" tab for next load
+    setInitialUiState();
+}
+// --- END NEW FUNCTION ---
+
 
 /**
  * Handles all click events within the main content area using delegation.
@@ -575,7 +598,7 @@ function displayRoll(displayElement, text, isCrit = false, isFumble = false) {
     displayElement.textContent = text;
     
     // Simple visual flair for crits/fumbles
-    displayElement.style.color = isCrit ? '#ecc94b' : (isFamble ? '#f56565' : '#e2e8f0');
+    displayElement.style.color = isCrit ? '#ecc94b' : (isFumble ? '#f56565' : '#e2e8f0');
     displayElement.style.fontWeight = (isCrit || isFumble) ? 'bold' : 'normal';
 }
 
@@ -660,7 +683,7 @@ function updateUiFromData() {
     // Coin
     ELEMENTS.coin.pp_display.textContent = CHARACTER_DATA.coin.pp;
     ELEMENTS.coin.gp_display.textContent = CHARACTER_DATA.coin.gp;
-    ELEMENTS.coin.ep_display.textContent = CHARACTER_DATA.coin.ep;
+    ELEMENTMusic.coin.ep_display.textContent = CHARACTER_DATA.coin.ep;
     ELEMENTS.coin.sp_display.textContent = CHARACTER_DATA.coin.sp;
     ELEMENTS.coin.cp_display.textContent = CHARACTER_DATA.coin.cp;
     
