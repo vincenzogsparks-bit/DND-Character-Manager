@@ -1,1373 +1,1750 @@
-/*
- * D&D 5e Character Sheet - app.js
- *
- * This file contains all the JavaScript logic for the interactive character sheet.
- * It's loaded as a module by index.html.
+/**
+ * app.js
+ * * Contains all the logic for the D&D Character Sheet, including UI interaction, 
+ * data persistence (Firebase/Local Storage), dice rolls, and feature tracking.
+ * * NOTE: The original code was tightly coupled HTML, CSS, and JS. This file
+ * has been restructured to be standalone JavaScript, interacting with the 
+ * linked index.html elements via their IDs and classes.
  */
 
-// --- MODULE-LEVEL STATE ---
+// =========================================================================
+// 1. GLOBAL VARIABLES AND ELEMENT MAPPINGS
+// =========================================================================
 
-// Character data is namespaced under this object.
-// This is what will be saved to and loaded from "the cloud" (localStorage).
-const CHARACTER_DATA = {
-    // Core Stats
-    hp: 34,
-    temp_hp: 0,
-    
-    // Resource Trackers
-    uses_second_wind: 3,
-    uses_action_surge: 1,
-    uses_giants_might: 2,
-    uses_fire_rune: 1,
-    uses_cloud_rune: 1,
-    uses_tactical_mind: 3,
-    
-    // Status Effects
-    status_giants_might: false,
-    
-    // Inventory & Coin
-    inventory: [], // This will hold objects for weapons, armor, etc.
-    coin: { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 },
-    
-    // Notes & Background
-    notes: "",
-    origin_story: ""
+// Firebase Configuration (Must be placed before any Firebase calls)
+// NOTE: These placeholder values assume the original code used Firebase.
+// The user will need to configure their Firebase project settings here.
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
-// A constant defining the base data structure for a new item.
-const ITEM_DEFAULTS = {
-    weapon: {
-        id: "", name: "", type: "Weapon", equipped: false, proficient: true,
-        attackType: "Melee", damage: "1d8", damageType: "Bludgeoning",
-        reach: 5, weight: 2, cost: 1, properties: "Versatile (1d10)",
-        notes: ""
-    },
-    armor: {
-        id: "", name: "", type: "Armor", equipped: false, armorType: "Heavy",
-        baseAC: 18, maxDex: 0, isProficient: true, stealthDisadvantage: true,
-        weight: 65, cost: 1500, notes: ""
-    }
-};
+let database;
+let auth;
+let characterRef;
+let userId = null;
+let currentCharacterId = "local_storage_id";
+let isFirebaseConnected = false;
 
-// A simple in-memory cache for DOM elements to avoid repeated queries.
-const ELEMENTS = {};
-
-// --- INITIALIZATION ---
-
-/**
- * Runs when the DOM is fully loaded.
- * Caches elements, sets up listeners, and initializes the UI.
- */
-function onDomLoaded() {
-    console.log("DOM loaded. Initializing sheet...");
-    
-    // 1. Cache all recurring DOM elements
-    cacheDomElements();
-    
-    // 2. Set up all event listeners
-    setupEventListeners();
-    
-    // 3. Initialize persistence (load data from localStorage)
-    initializePersistence();
-    
-    // 4. Set the initial UI state (e.g., active tab)
-    setInitialUiState();
-    
-    console.log("Sheet initialized.");
-}
-
-/**
- * Finds and stores all frequently used DOM elements in the ELEMENTS cache.
- */
-function cacheDomElements() {
-    // --- MERGED FROM MONOLITHIC FILE & NEW LOGIC ---
-    
-    // Page Containers
-    ELEMENTS.splashScreen = document.getElementById('splash-screen');
-    ELEMENTS.mainContent = document.getElementById('main-content');
-    ELEMENTS.mainMenu = document.getElementById('main-menu');
-    ELEMENTS.characterSheetPage = document.getElementById('character-sheet-page');
-    ELEMENTS.pageContainer = document.getElementById('page-container');
-    
-    // Menu Buttons
-    ELEMENTS.loadCharThangrim = document.getElementById('load-char-thangrim');
-    ELEMENTS.returnToMenuButton = document.getElementById('return-to-menu-button');
+// UI Elements - Centralized mapping for easy access
+const ELEMENTS = {
+    // Main & Header
+    appContainer: document.getElementById('app-container'),
+    splashScreen: document.getElementById('splash-screen'),
+    loginLogoutButton: document.getElementById('login-logout-button'),
+    statusAlert: document.getElementById('status-alert'),
+    statusMessage: document.getElementById('status-message'),
+    characterName: document.getElementById('character-name'),
+    raceClassLevel: document.getElementById('race-class-level'),
+    mainContent: document.getElementById('main-content'),
 
     // Navigation
-    ELEMENTS.navContainer = document.getElementById('main-navigation');
-    
-    // Header / Core Stats
-    ELEMENTS.currentHpInput = document.getElementById('current-hp');
-    ELEMENTS.maxHpSpan = document.getElementById('max-hp');
-    ELEMENTS.tempHpInput = document.getElementById('temp-hp');
-    ELEMENTS.hpPlusButton = document.getElementById('hp-plus-button');
-    ELEMENTS.hpMinusButton = document.getElementById('hp-minus-button');
-    ELEMENTS.acDisplay = document.getElementById('ac-display');
-    ELEMENTS.longRestButton = document.getElementById('long-rest-button');
-    ELEMENTS.shortRestButton = document.getElementById('short-rest-button');
-    
-    // Roll Displays
-    ELEMENTS.skillRollDisplay = document.getElementById('skill-roll-display');
-    ELEMENTS.saveRollDisplay = document.getElementById('save-roll-display');
-    ELEMENTS.actionRollDisplay = document.getElementById('action-roll-display');
-    
-    // Dice Buttons
-    ELEMENTS.diceRollerBar = document.getElementById('dice-roller-bar');
-    
-    // Resource Trackers (Spans)
-    ELEMENTS.secondWindUses = document.getElementById('second-wind-uses');
-    ELEMENTS.actionSurgeUses = document.getElementById('action-surge-uses');
-    ELEMENTS.giantsMightUses = document.getElementById('giants-might-uses');
-    ELEMENTS.fireRuneUses = document.getElementById('fire-rune-uses');
-    ELEMENTS.cloudRuneUses = document.getElementById('cloud-rune-uses');
-    ELEMENTS.tacticalMindUses = document.getElementById('tactical-mind-uses');
-    
-    // Resource Buttons
-    ELEMENTS.rollSecondWind = document.getElementById('roll-second-wind');
-    ELEMENTS.useActionSurge = document.getElementById('use-action-surge');
-    ELEMENTS.activateGiantsMight = document.getElementById('activate-giants-might');
-    ELEMENTS.deactivateGiantsMight = document.getElementById('deactivate-giants-might');
-    ELEMENTS.rollFireRuneDmg = document.getElementById('roll-fire-rune-dmg');
-    ELEMENTS.useCloudRune = document.getElementById('use-cloud-rune');
-    ELEMENTS.rollTacticalMind = document.getElementById('roll-tactical-mind');
-    
-    // Status Indicators
-    ELEMENTS.giantsMightStatus = document.getElementById('giants-might-status');
-    ELEMENTS.giantsMightCard = document.getElementById('giants-might-card');
+    navButtons: document.querySelectorAll('.nav-button'),
+    pageMain: document.getElementById('page-main'),
+    pageCombat: document.getElementById('page-combat'),
+    pageInventory: document.getElementById('page-inventory'),
+    pageFeatures: document.getElementById('page-features'),
+    pageNotes: document.getElementById('page-notes'),
+    pageOrigin: document.getElementById('page-origin'),
 
-    // Saves & Skills
-    ELEMENTS.skillsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
-    ELEMENTS.savesContainer = document.querySelector('.bg-gray-800 ul.space-y-2');
-    ELEMENTS.strSaveBonus = document.getElementById('str-save-bonus');
-    ELEMENTS.dexSaveBonus = document.getElementById('dex-save-bonus');
-    ELEMENTS.conSaveBonus = document.getElementById('con-save-bonus');
-    ELEMENTS.intSaveBonus = document.getElementById('int-save-bonus');
-    ELEMENTS.wisSaveBonus = document.getElementById('wis-save-bonus');
-    ELEMENTS.chaSaveBonus = document.getElementById('cha-save-bonus');
-    
-    // Text Areas (for saving)
-    ELEMENTS.notesTextarea = document.getElementById('notes-content-textarea');
-    ELEMENTS.originStoryTextarea = document.getElementById('origin-story-textarea');
-    
-    // Inventory & Coinage
-    ELEMENTS.inventoryListContainer = document.getElementById('inventory-list-container');
-    ELEMENTS.actionsList = document.getElementById('actions-list');
-    ELEMENTS.itemTypeSelect = document.getElementById('item-type-select');
-    ELEMENTS.weaponForm = document.getElementById('weapon-form-container');
-    ELEMENTS.armorForm = document.getElementById('armor-form-container');
-    ELEMENTS.otherForm = document.getElementById('other-form-placeholder');
-    
-    ELEMENTS.coin = {
-        pp_display: document.getElementById('coin-pp-display'),
-        gp_display: document.getElementById('coin-gp-display'),
-        ep_display: document.getElementById('coin-ep-display'),
-        sp_display: document.getElementById('coin-sp-display'),
-        cp_display: document.getElementById('coin-cp-display'),
-        pp_input: document.getElementById('coin-pp-input'),
-        gp_input: document.getElementById('coin-gp-input'),
-        ep_input: document.getElementById('coin-ep-input'),
-        sp_input: document.getElementById('coin-sp-input'),
-        cp_input: document.getElementById('coin-cp-input'),
-        add: document.getElementById('coin-add-button'),
-        remove: document.getElementById('coin-remove-button'),
-        clear: document.getElementById('coin-clear-button')
-    };
+    // Main Stats
+    profBonusInput: document.getElementById('prof-bonus-input'),
+    acInput: document.getElementById('ac-input'),
+    initiativeInput: document.getElementById('initiative-input'),
+    speedInput: document.getElementById('speed-input'),
+    maxHpInput: document.getElementById('max-hp-input'),
+    currentHpInput: document.getElementById('current-hp-input'),
+    tempHpInput: document.getElementById('temp-hp-input'),
+    hitDiceSizeInput: document.getElementById('hit-dice-size-input'),
+    hitDiceCountInput: document.getElementById('hit-dice-count-input'),
 
-    // Inventory Forms (Weapon)
-    ELEMENTS.weaponFormInputs = {
-        name: document.getElementById('weapon-name'),
-        proficiency: document.getElementById('weapon-proficiency'),
-        attackType: document.getElementById('weapon-attack-type'),
-        damage: document.getElementById('weapon-damage'),
-        damageType: document.getElementById('weapon-damage-type'),
-        reach: document.getElementById('weapon-reach'),
-        weight: document.getElementById('weapon-weight'),
-        cost: document.getElementById('weapon-cost'),
-        properties: document.getElementById('weapon-properties'),
-        notes: document.getElementById('weapon-notes'),
-        addButton: document.getElementById('add-weapon-button')
-    };
+    // Ability Scores & Saves
+    abilityScoreBoxes: document.querySelectorAll('.ability-score-box'),
+    abilityScoreInputs: document.querySelectorAll('.ability-score-input'),
+    savingThrows: document.getElementById('saving-throws'),
+    saveThrowRows: document.querySelectorAll('.saving-throw-row'),
     
-    // Inventory Forms (Armor)
-    ELEMENTS.armorFormInputs = {
-        name: document.getElementById('armor-name'),
-        type: document.getElementById('armor-type'),
-        ac: document.getElementById('armor-ac'),
-        maxDex: document.getElementById('armor-max-dex'),
-        isProficient: document.getElementById('armor-is-proficient'),
-        weight: document.getElementById('armor-weight'),
-        cost: document.getElementById('armor-cost'),
-        stealthDisadvantage: document.getElementById('armor-stealth-disadvantage'),
-        notes: document.getElementById('armor-notes'),
-        addButton: document.getElementById('add-armor-button')
-    };
-}
+    // Skills
+    passivePerception: document.getElementById('passive-perception'),
+    passiveInvestigation: document.getElementById('passive-investigation'),
+    passiveInsight: document.getElementById('passive-insight'),
+    skillsList: document.getElementById('skills-list'),
+    skillRows: document.querySelectorAll('.skill-row'),
+    
+    // Dice Roll Modal
+    rollModal: document.getElementById('roll-modal'),
+    rollModalTitle: document.getElementById('roll-modal-title'),
+    rollModalType: document.getElementById('roll-modal-type'),
+    rollModalResult: document.getElementById('roll-modal-result'),
+    rollModalBreakdown: document.getElementById('roll-modal-breakdown'),
+    rollModalDamageResult: document.getElementById('roll-modal-damage-result'),
+    rollModalClose: document.getElementById('roll-modal-close'),
+    
+    // Death Saves
+    deathSaveCheckboxes: document.querySelectorAll('.death-save-checkbox'),
 
-/**
- * Attaches all the necessary event listeners to the cached elements.
- */
-function setupEventListeners() {
-    // --- MERGED FROM MONOLITHIC FILE & NEW LOGIC ---
+    // Combat
+    attacksList: document.getElementById('attacks-list'),
+    addAttackForm: document.getElementById('add-attack-form'),
+    attackNameInput: document.getElementById('attack-name-input'),
+    attackStatInput: document.getElementById('attack-stat-input'),
+    attackDamageInput: document.getElementById('attack-damage-input'),
+    spellSaveDc: document.getElementById('spell-save-dc'),
+    spellAttackBonus: document.getElementById('spell-attack-bonus'),
+    spellCastingStatInput: document.getElementById('spell-casting-stat-input'),
 
-    // Splash Screen (BUG FIX/DIAGNOSTIC LOGGING ADDED HERE)
-    ELEMENTS.splashScreen.addEventListener('click', handleSplashClick, { once: true });
+    // Inventory
+    currencyInputs: document.querySelectorAll('.currency-input'),
+    totalWeight: document.getElementById('total-weight'),
+    carryingCapacity: document.getElementById('carrying-capacity'),
+    encumbranceStatus: document.getElementById('encumbrance-status'),
+    addItemForm: document.getElementById('add-item-form'),
+    itemNameInput: document.getElementById('item-name-input'),
+    itemQuantityInput: document.getElementById('item-quantity-input'),
+    itemWeightInput: document.getElementById('item-weight-input'),
+    inventoryListTableBody: document.getElementById('inventory-list-table-body'),
+    inventoryPlaceholder: document.getElementById('inventory-placeholder'),
 
-    // Page Navigation
-    if (ELEMENTS.loadCharThangrim) {
-        ELEMENTS.loadCharThangrim.addEventListener('click', handleLoadCharacter);
+    // Features
+    addFeatureForm: document.getElementById('add-feature-form'),
+    featureNameInput: document.getElementById('feature-name-input'),
+    featuresList: document.getElementById('features-list'),
+    featuresPlaceholder: document.getElementById('features-placeholder'),
+    giantsMightTracker: document.getElementById('giants-might-tracker'),
+    giantsMightUses: document.getElementById('giants-might-uses'),
+    giantsMightToggle: document.getElementById('giants-might-toggle'),
+    giantsMightStatus: document.getElementById('giants-might-status'),
+    actionSurgeUses: document.getElementById('action-surge-uses'),
+    actionSurgeExpend: document.getElementById('action-surge-expend'),
+    runeTrackers: document.getElementById('rune-trackers'),
+
+    // Notes & Origin
+    notesTextarea: document.getElementById('notes-textarea'),
+    originStoryTextarea: document.getElementById('origin-story-textarea'),
+};
+
+// Character Data Model (In-memory representation of the sheet data)
+let characterData = {
+    // General
+    name: '',
+    raceClassLevel: '',
+    profBonus: 2,
+    ac: 10,
+    initiative: 0,
+    speed: 30,
+    // HP & Dice
+    maxHp: 10,
+    currentHp: 10,
+    tempHp: 0,
+    hitDiceSize: 'd10',
+    hitDiceCount: 1,
+    // Ability Scores (STR, DEX, CON, INT, WIS, CHA)
+    abilities: {
+        STR: 10,
+        DEX: 10,
+        CON: 10,
+        INT: 10,
+        WIS: 10,
+        CHA: 10,
+    },
+    // Proficiency (0: None, 1: Proficient, 2: Expertise)
+    saves: {
+        STR: false,
+        DEX: false,
+        CON: false,
+        INT: false,
+        WIS: false,
+        CHA: false,
+    },
+    skills: {
+        acrobatics: 0, // DEX
+        animalHandling: 0, // WIS
+        arcana: 0, // INT
+        athletics: 0, // STR
+        deception: 0, // CHA
+        history: 0, // INT
+        insight: 0, // WIS
+        intimidation: 0, // CHA
+        investigation: 0, // INT
+        medicine: 0, // WIS
+        nature: 0, // INT
+        perception: 0, // WIS
+        performance: 0, // CHA
+        persuasion: 0, // CHA
+        religion: 0, // INT
+        sleightOfHand: 0, // DEX
+        stealth: 0, // DEX
+        survival: 0, // WIS
+    },
+    // Combat
+    attacks: [],
+    spellCastingStat: 'None',
+    // Inventory
+    currency: {
+        cp: 0,
+        sp: 0,
+        ep: 0,
+        gp: 0,
+        pp: 0,
+    },
+    inventory: {}, // key: uuid, value: {name, quantity, weight}
+    // Features
+    features: [], // key: uuid, value: {name, description}
+    giantsMightUses: 0,
+    giantsMightActive: false,
+    actionSurgeUses: 1,
+    runes: {
+        fire: 1,
+        frost: 1,
+    },
+    // Notes
+    notes: '',
+    originStory: '',
+    // Death Saves
+    deathSaves: {
+        successes: 0,
+        failures: 0
     }
-    if (ELEMENTS.returnToMenuButton) {
-        ELEMENTS.returnToMenuButton.addEventListener('click', handleReturnToMenu);
-    }
+};
 
-    // Sheet Internal Navigation
-    ELEMENTS.navContainer.addEventListener('click', handleNavigation);
-    
-    // HP & Rest
-    ELEMENTS.currentHpInput.addEventListener('input', handleHpChange);
-    ELEMENTS.tempHpInput.addEventListener('input', handleHpChange);
-    ELEMENTS.hpPlusButton.addEventListener('click', () => modifyHp(1));
-    ELEMENTS.hpMinusButton.addEventListener('click', () => modifyHp(-1));
-    ELEMENTS.longRestButton.addEventListener('click', handleLongRest);
-    ELEMENTS.shortRestButton.addEventListener('click', handleShortRest);
-    
-    // Textarea listeners (Debounced for performance)
-    ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
-    ELEMENTS.originStoryTextarea.addEventListener('input', debouncedOriginStoryChange);
-    
-    // Rollable Listeners (Event Delegation)
-    ELEMENTS.skillsContainer.addEventListener('click', (e) => {
-        const skillElement = e.target.closest('.skill-rollable');
-        if (skillElement) handleSkillRoll(skillElement);
-    });
-    
-    ELEMENTS.savesContainer.addEventListener('click', (e) => {
-        const saveElement = e.target.closest('.save-rollable');
-        if (saveElement) handleSaveRoll(saveElement);
-    });
-    
-    ELEMENTS.diceRollerBar.addEventListener('click', (e) => {
-        const dieButton = e.target.closest('.dice-button-svg');
-        if (dieButton) handleQuickDieRoll(dieButton);
-    });
-    
-    // Action Page Listeners (Delegation)
-    document.getElementById('page-actions').addEventListener('click', (e) => {
-        const actionButton = e.target.closest('.action-roll-button');
-        if (actionButton) handleActionRoll(actionButton);
-    });
-
-    // Inventory Page Listeners
-    ELEMENTS.itemTypeSelect.addEventListener('change', () => handleInventoryFormChange(ELEMENTS.itemTypeSelect.value));
-    ELEMENTS.weaponFormInputs.addButton.addEventListener('click', addNewWeapon);
-    ELEMENTS.armorFormInputs.addButton.addEventListener('click', addNewArmor);
-    
-    // Inventory List (Delegation)
-    ELEMENTS.inventoryListContainer.addEventListener('click', (e) => {
-        const equipButton = e.target.closest('.inventory-equip-button');
-        const deleteButton = e.target.closest('.inventory-delete-button');
-        if (equipButton) {
-            toggleEquipItem(equipButton.dataset.itemId);
-        }
-        if (deleteButton) {
-            deleteItem(deleteButton.dataset.itemId);
-        }
-    });
-    
-    // Coinage
-    ELEMENTS.coin.add.addEventListener('click', () => modifyCoin('add'));
-    ELEMENTS.coin.remove.addEventListener('click', () => modifyCoin('remove'));
-    ELEMENTS.coin.clear.addEventListener('click', clearCoinInputs);
-}
-
-// --- PAGE NAVIGATION HANDLERS (NEW) ---
+// =========================================================================
+// 2. UTILITY FUNCTIONS
+// =========================================================================
 
 /**
- * Fades out the splash screen and fades in the main menu.
+ * Calculates the ability modifier for a given score.
+ * @param {number} score 
+ * @returns {number} The modifier
  */
-function handleSplashClick() {
-    console.log("Splash Screen Click Registered. Beginning transition."); // DIAGNOSTIC LOG
-
-    ELEMENTS.splashScreen.style.opacity = '0';
-    
-    // Show the main menu
-    ELEMENTS.mainMenu.classList.remove('hidden');
-    // Trigger the fade-in animation
-    ELEMENTS.mainMenu.classList.add('loaded');
-    
-    // After the fade-out, remove the splash screen from the DOM
-    setTimeout(() => {
-        ELEMENTS.splashScreen.remove();
-    }, 500); // Matches the CSS transition duration
-}
+const getMod = (score) => Math.floor((score - 10) / 2);
 
 /**
- * Hides the main menu and shows the character sheet.
+ * Gets the proficiency bonus from the data model.
+ * @returns {number} The proficiency bonus
  */
-function handleLoadCharacter() {
-    // Hide the main menu
-    ELEMENTS.mainMenu.classList.add('hidden');
-    ELEMENTS.mainMenu.classList.remove('loaded'); // Prepare for re-fade-in
-    
-    // Show the character sheet page container
-    ELEMENTS.characterSheetPage.classList.remove('hidden');
-    // Trigger the fade-in for the character sheet
-    ELEMENTS.characterSheetPage.classList.add('loaded');
-}
+const getProfBonus = () => parseInt(characterData.profBonus) || 0;
 
 /**
- * Hides the character sheet and returns to the main menu.
+ * Formats a number (modifier) to include a '+' sign if positive.
+ * @param {number} num 
+ * @returns {string} Formatted string
  */
-function handleReturnToMenu() {
-    // Hide the character sheet
-    ELEMENTS.characterSheetPage.classList.add('hidden');
-    ELEMENTS.characterSheetPage.classList.remove('loaded'); // Prepare for re-fade-in
-    
-    // Show the main menu
-    ELEMENTS.mainMenu.classList.remove('hidden');
-    // Trigger the fade-in for the main menu
-    ELEMENTS.mainMenu.classList.add('loaded');
-
-    // Reset the character sheet to the "Main" tab for next load
-    setInitialUiState();
-}
-
-// --- (End of Chunk 1) ---
-// --- CHARACTER SHEET NAVIGATION & STATE ---
+const formatModifier = (num) => (num >= 0 ? `+${num}` : num.toString());
 
 /**
- * Sets the initial state of the UI on load (e.g., active tab).
+ * Generates a simple, unique ID (for attacks, inventory, features).
+ * @returns {string} A unique ID
  */
-const setInitialUiState = function() {
-    // Set the default "Main" button to active on load
-    const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
-    if (defaultButton) {
-        defaultButton.classList.add('active');
-    }
-    
-    // Hide all pages except the main one
-    const pages = ELEMENTS.pageContainer.querySelectorAll('.page-content');
-    pages.forEach(page => {
-        if (page.id !== 'page-main') {
-            page.classList.add('hidden');
-        } else {
-            page.classList.remove('hidden');
-        }
-    });
-}
+const generateUniqueId = () => {
+    return 'id-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+};
 
 /**
- * Handles page navigation by switching active tabs and showing/hiding pages.
+ * Debounce function to limit how often a function is called.
+ * Useful for saving data from input events.
+ * @param {function} func - The function to debounce
+ * @param {number} delay - The delay in milliseconds
+ * @returns {function} The debounced function
  */
-const handleNavigation = function(event) {
-    const navButton = event.target.closest('.nav-button');
-    if (!navButton) return;
-
-    const pageId = navButton.dataset.page;
-    if (!pageId) return;
-
-    // 1. Update Navigation Buttons
-    // Remove 'active' from all buttons
-    ELEMENTS.navContainer.querySelectorAll('.nav-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    // Add 'active' to the clicked button
-    navButton.classList.add('active');
-
-    // 2. Show/Hide Page Content
-    // Hide all pages
-    ELEMENTS.pageContainer.querySelectorAll('.page-content').forEach(page => {
-        page.classList.add('hidden');
-    });
-    // Show the target page
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.remove('hidden');
-    } else {
-        console.error(`Navigation error: Page with ID "${pageId}" not found.`);
-        // Show the main page as a fallback
-        document.getElementById('page-main').classList.remove('hidden');
-    }
-}
-
-// --- DEBOUNCED HANDLERS ---
-
-/**
- * Debounce function to limit how often a function can run.
- */
-function debounce(func, delay) {
+const debounce = (func, delay) => {
     let timeout;
     return function(...args) {
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), delay);
     };
-}
+};
 
-const debouncedNotesChange = debounce((event) => {
-    CHARACTER_DATA.notes = event.target.value;
-    saveCharacterData();
-}, 500);
-
-const debouncedOriginStoryChange = debounce((event) => {
-    CHARACTER_DATA.origin_story = event.target.value;
-    saveCharacterData();
-}, 500);
-
-// --- DICE ROLLING LOGIC ---
+// =========================================================================
+// 3. DATA PERSISTENCE (Firebase & Local Storage)
+// =========================================================================
 
 /**
- * Rolls a simple die of a given size.
+ * Initializes Firebase and sets up the listener for authentication state.
  */
-function rollSimpleDie(size) {
-    return Math.floor(Math.random() * size) + 1;
-}
-
-/**
- * Doubles the dice component (e.g., "1d8+5" -> "2d8+5").
- */
-function doubleDiceInString(diceString) {
-    const diceMatch = diceString.match(/(\d+)d(\d+)/i);
-    if (diceMatch) {
-        const numDice = parseInt(diceMatch[1], 10) * 2;
-        const dieSize = parseInt(diceMatch[2], 10);
-        const remaining = diceString.slice(diceMatch.index + diceMatch[0].length);
-        return `${numDice}d${dieSize}${remaining}`;
-    }
-    return diceString; // Return original if no dice found
-}
-
-/**
- * Rolls a d20 with optional advantage or disadvantage.
- */
-function rollD20(type = 'normal') {
-    const roll1 = rollSimpleDie(20);
-    const roll2 = rollSimpleDie(20);
-    let finalResult, resultText;
-
-    if (type === 'advantage') {
-        finalResult = Math.max(roll1, roll2);
-        resultText = `(${roll1}, ${roll2}) Adv`;
-    } else if (type === 'disadvantage') {
-        finalResult = Math.min(roll1, roll2);
-        resultText = `(${roll1}, ${roll2}) Dis`;
-    } else {
-        finalResult = roll1;
-        resultText = `${roll1}`;
-    }
-
-    return {
-        finalResult: finalResult,
-        resultText: resultText,
-        isCrit: finalResult === 20,
-        isFumble: finalResult === 1
-    };
-}
-
-/**
- * Parses a dice string (e.g., "2d6+3") and rolls the dice.
- * Applies Great Weapon Fighting logic if applicable.
- */
-function rollDiceString(diceString, isGreatWeapon = false) {
-    let numDice = 1;
-    let dieSize = 20;
-    let modifier = 0;
-
-    const modMatch = diceString.match(/[+-]\d+$/);
-    if (modMatch) {
-        modifier = parseInt(modMatch[0], 10);
-        diceString = diceString.slice(0, modMatch.index);
-    }
-
-    const diceMatch = diceString.match(/(\d+)d(\d+)/i);
-    if (diceMatch) {
-        numDice = parseInt(diceMatch[1], 10);
-        dieSize = parseInt(diceMatch[2], 10);
-    } else {
-        // Handle static damage (e.g., "6")
-        const staticDmg = parseInt(diceString, 10);
-        if (!isNaN(staticDmg)) {
-            return { total: staticDmg + modifier, rollText: `${staticDmg}` };
+const initializePersistence = () => {
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-    }
+        database = firebase.database();
+        auth = firebase.auth();
+        isFirebaseConnected = true;
 
-    let total = 0;
-    let rolls = [];
-    for (let i = 0; i < numDice; i++) {
-        let roll = rollSimpleDie(dieSize);
-        // Great Weapon Fighting logic
-        if (isGreatWeapon && (roll === 1 || roll === 2)) {
-            roll = 3; // Treat 1s and 2s as 3s
-        }
-        total += roll;
-        rolls.push(roll);
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in (Firebase)
+                userId = user.uid;
+                characterRef = database.ref(`users/${userId}/characterData`);
+                ELEMENTS.loginLogoutButton.textContent = 'Logout';
+                ELEMENTS.statusAlert.classList.add('bg-green-800');
+                ELEMENTS.statusAlert.classList.remove('bg-red-800');
+                ELEMENTS.statusMessage.textContent = 'Status: Connected to Firebase. Data is backed up.';
+                showStatusAlert(true);
+                loadCharacterData();
+            } else {
+                // User is signed out (Local Storage)
+                userId = null;
+                characterRef = null;
+                ELEMENTS.loginLogoutButton.textContent = 'Login';
+                ELEMENTS.statusAlert.classList.remove('bg-green-800');
+                ELEMENTS.statusAlert.classList.add('bg-red-800');
+                ELEMENTS.statusMessage.textContent = 'Status: Not logged in. Using Local Storage.';
+                showStatusAlert(true);
+                loadCharacterData();
+            }
+        });
+    } catch (error) {
+        console.error("Firebase initialization failed:", error);
+        isFirebaseConnected = false;
+        // Fallback to Local Storage only
+        ELEMENTS.loginLogoutButton.textContent = 'Login (Disabled)';
+        ELEMENTS.loginLogoutButton.disabled = true;
+        ELEMENTS.statusAlert.classList.remove('bg-green-800');
+        ELEMENTS.statusAlert.classList.add('bg-red-800');
+        ELEMENTS.statusMessage.textContent = 'Error: Firebase failed to connect. Using Local Storage.';
+        showStatusAlert(true);
+        loadCharacterData();
     }
-
-    return {
-        total: total + modifier,
-        rollText: `(${rolls.join('+')})`
-    };
-}
+};
 
 /**
- * Displays a roll result in a specified element.
- * Applies visual flair for crits/fumbles.
- * Highlights the associated card on a crit.
+ * Displays or hides the status alert with a timeout.
+ * @param {boolean} show - Whether to show or hide the alert
  */
-function displayRoll(displayElement, text, isCrit = false, isFumble = false, cardElement = null) {
-    displayElement.textContent = text;
+const showStatusAlert = (show) => {
+    ELEMENTS.statusAlert.classList.remove('hidden');
+    ELEMENTS.statusAlert.classList.remove('opacity-0');
+    ELEMENTS.statusAlert.classList.add('opacity-100');
     
-    // Visual flair for crits/fumbles
-    displayElement.style.color = isCrit ? '#ecc94b' : (isFumble ? '#f56565' : '#e2e8f0');
-    displayElement.style.fontWeight = (isCrit || isFumble) ? 'bold' : 'normal';
-
-    // Remove crit glow from all cards
-    document.querySelectorAll('.action-card.crit').forEach(card => card.classList.remove('crit'));
-
-    // Add crit glow to the specific card
-    if (isCrit && cardElement) {
-        cardElement.classList.add('crit');
+    if (show) {
+        setTimeout(() => {
+            ELEMENTS.statusAlert.classList.remove('opacity-100');
+            ELEMENTS.statusAlert.classList.add('opacity-0');
+            // Hide completely after transition
+            setTimeout(() => ELEMENTS.statusAlert.classList.add('hidden'), 300); 
+        }, 5000); // Display for 5 seconds
     }
-}
-
-// --- CORE ROLLING HANDLERS ---
+};
 
 /**
- * Rolls a skill check based on the clicked skill element.
+ * Authenticates the user using Google popup.
  */
-function handleSkillRoll(skillElement) {
-    const skillName = skillElement.dataset.skillName;
-    const modifier = parseInt(skillElement.dataset.modifier, 10);
-    const rollType = skillElement.dataset.rollType; // 'normal', 'advantage', 'disadvantage'
-
-    const roll = rollD20(rollType);
-    const total = roll.finalResult + modifier;
-    const resultText = `${skillName}: ${total} [${roll.resultText} + ${modifier}]`;
-
-    displayRoll(ELEMENTS.skillRollDisplay, resultText, roll.isCrit, roll.isFumble);
-}
-
-/**
- * Rolls a saving throw based on the clicked save element.
- */
-function handleSaveRoll(saveElement) {
-    const saveName = saveElement.dataset.saveName;
-    const modifier = parseInt(saveElement.dataset.modifier, 10);
-    const stat = saveElement.dataset.stat; // e.g., "STR"
-    
-    let rollType = 'normal';
-    
-    // Check for Giant's Might advantage
-    if (CHARACTER_DATA.status_giants_might && (stat === "STR" || stat === "CON")) {
-        rollType = 'advantage';
-    }
-
-    const roll = rollD20(rollType);
-    const total = roll.finalResult + modifier;
-    
-    let resultText = `${saveName}: ${total} [${roll.resultText} + ${modifier}]`;
-    if (rollType === 'advantage') {
-        resultText += " (Adv)";
-    }
-
-    displayRoll(ELEMENTS.saveRollDisplay, resultText, roll.isCrit, roll.isFumble);
-}
-
-/**
- * Rolls a generic die from the quick-roll bar.
- */
-function handleQuickDieRoll(dieButton) {
-    const dieSize = parseInt(dieButton.dataset.die, 10);
-    if (isNaN(dieSize)) return;
-
-    const result = rollSimpleDie(dieSize);
-    const resultText = `D${dieSize} Roll: ${result}`;
-    
-    // Display in the skill roll display as it's the most central one
-    displayRoll(ELEMENTS.skillRollDisplay, resultText);
-}
-
-// --- (End of Chunk 2) ---
-
-// --- ACTION PAGE LOGIC ---
-
-/**
- * Main handler for all clicks on .action-roll-button
- * Routes to the correct function based on data-roll-type.
- */
-function handleActionRoll(button) {
-    const rollType = button.dataset.rollType;
-    const card = button.closest('.action-card');
-    
-    // Route to the correct logic
-    switch (rollType) {
-        case 'hit':
-        case 'damage':
-        case 'damage-rune':
-        case 'static':
-            rollAttackOrDamage(button, card, rollType);
-            break;
-        case 'heal':
-            useSecondWind(button, card);
-            break;
-        case 'use-action':
-            useActionSurge(button, card);
-            break;
-        case 'activate': // Giant's Might
-            toggleGiantsMight(true);
-            break;
-        case 'deactivate': // Giant's Might
-            toggleGiantsMight(false);
-            break;
-        case 'use-rune':
-            useCloudRune(button, card);
-            break;
-        case 'roll': // Generic roll, e.g., Tactical Mind
-            useTacticalMind(button, card);
-            break;
-        default:
-            console.warn(`Unknown action roll type: ${rollType}`);
-            displayRoll(ELEMENTS.actionRollDisplay, `Unknown action: ${rollType}`);
-    }
-}
-
-/**
- * Handles rolling for attacks or damage from an action card.
- */
-function rollAttackOrDamage(button, card, rollType) {
-    const rollString = button.dataset.roll;
-    const rollName = button.dataset.rollName;
-    const attackType = button.dataset.attackType;
-    
-    let resultText = `${rollName}: `;
-    let isCrit = false;
-    let isFumble = false;
-
-    // --- Attack Roll (Hit) ---
-    if (rollType === 'hit') {
-        let rollType = 'normal';
-        // Check for Giant's Might STR advantage
-        if (CHARACTER_DATA.status_giants_might && attackType === "Melee") {
-            rollType = 'advantage';
-        }
-        
-        const d20 = rollD20(rollType);
-        const [_, mod] = rollString.split('+');
-        const modifier = parseInt(mod, 10);
-        const total = d20.finalResult + modifier;
-
-        resultText += `${total} [${d20.resultText} + ${modifier}]`;
-        if (rollType === 'advantage') resultText += " (Adv)";
-        
-        isCrit = d20.isCrit;
-        isFumble = d20.isFumble;
-
-    // --- Damage Roll (Dice) ---
-    } else if (rollType === 'damage' || rollType === 'damage-rune') {
-        let currentRollString = rollString;
-        let isCritical = false;
-
-        // Check for Critical Hit from the previous attack roll (BUG FIX #1)
-        if (rollType === 'damage' && card && card.classList.contains('crit')) {
-            currentRollString = doubleDiceInString(currentRollString);
-            isCritical = true;
-        }
-
-        // Remove the .crit class after rolling damage
-        if (isCritical) {
-            card.classList.remove('crit');
-        }
-
-        // Check for Great Weapon Fighting (only for 'damage' type, not 'damage-rune')
-        const isGreatWeapon = rollType === 'damage' && (attackType === 'Melee');
-        
-        const roll = rollDiceString(currentRollString, isGreatWeapon);
-        
-        // Add Giant's Might extra 1d6 damage
-        let giantsMightText = "";
-        if (CHARACTER_DATA.status_giants_might) {
-            const giantsMightRoll = rollSimpleDie(6);
-            roll.total += giantsMightRoll;
-            giantsMightText = ` + ${giantsMightRoll}[GM]`;
-        }
-        
-        resultText += `${roll.total} [${roll.rollText}${giantsMightText}] Damage`;
-
-        // Consume Fire Rune use
-        if (rollType === 'damage-rune') {
-            consumeResource('fire_rune', ELEMENTS.fireRuneUses, button);
-        }
-        
-    // --- Static Damage (No Dice) ---
-    } else if (rollType === 'static') {
-        const dmg = parseInt(rollString, 10);
-        let total = dmg;
-        let giantsMightText = "";
-        
-        // Add Giant's Might extra 1d6 damage
-        if (CHARACTER_DATA.status_giants_might) {
-            const giantsMightRoll = rollSimpleDie(6);
-            total += giantsMightRoll;
-            giantsMightText = ` + ${giantsMightRoll}[GM]`;
-        }
-        resultText += `${total} [${dmg}${giantsMightText}] Damage`;
-    }
-    
-    displayRoll(ELEMENTS.actionRollDisplay, resultText, isCrit, isFumble, card);
-}
-
-/**
- * Handles "Second Wind" ability.
- * Rolls heal, adds to HP, consumes a use.
- */
-function useSecondWind(button, card) {
-    if (CHARACTER_DATA.uses_second_wind <= 0) {
-        displayRoll(ELEMENTS.actionRollDisplay, "No uses of Second Wind remaining.", false, false, card);
-        return;
-    }
-    
-    const rollString = button.dataset.roll; // "1d10+4"
-    const rollName = button.dataset.rollName;
-    
-    const roll = rollDiceString(rollString);
-    const healAmount = roll.total;
-    
-    // Consume the resource
-    CHARACTER_DATA.uses_second_wind--;
-    
-    // Add the health
-    let currentHp = parseInt(ELEMENTS.currentHpInput.value, 10);
-    const maxHp = parseInt(ELEMENTS.maxHpSpan.textContent, 10);
-    currentHp = Math.min(currentHp + healAmount, maxHp); // Don't overheal
-    
-    CHARACTER_DATA.hp = currentHp;
-    
-    // Update UI and save
-    ELEMENTS.currentHpInput.value = currentHp;
-    ELEMENTS.secondWindUses.textContent = CHARACTER_DATA.uses_second_wind;
-    updateResourceButtonStates(); // Disables button if uses hit 0
-    saveCharacterData();
-    
-    const resultText = `${rollName}: Healed ${healAmount} HP [${roll.rollText}]`;
-    displayRoll(ELEMENTS.actionRollDisplay, resultText, false, false, card);
-}
-
-/**
- * Handles "Action Surge" ability.
- * Consumes a use and updates the UI.
- */
-function useActionSurge(button, card) {
-    if (CHARACTER_DATA.uses_action_surge <= 0) {
-        displayRoll(ELEMENTS.actionRollDisplay, "No uses of Action Surge remaining.", false, false, card);
-        return;
-    }
-    
-    // Consume the resource
-    consumeResource('action_surge', ELEMENTS.actionSurgeUses, button);
-    
-    const resultText = `Action Surge used! You gain one additional action.`;
-    displayRoll(ELEMENTS.actionRollDisplay, resultText, false, false, card);
-}
-
-/**
- * --- GENERIC RESOURCE HANDLER ---
- * Consumes a resource, updates its text, disables the button, and saves.
- */
-function consumeResource(resourceName, textElement, buttonElement) {
-    if (CHARACTER_DATA[`uses_${resourceName}`] > 0) {
-        CHARACTER_DATA[`uses_${resourceName}`]--;
-        
-        textElement.textContent = CHARACTER_DATA[`uses_${resourceName}`];
-        updateResourceButtonStates(); // Disables button if uses hit 0
-        saveCharacterData();
-        
-        return true; // Successfully consumed
-    }
-    return false; // No uses left
-}
-
-// --- (End of Chunk 3) ---
-/**
- * Handles "Cloud Rune" ability.
- * Consumes a use and updates the UI.
- */
-function useCloudRune(button, card) {
-    if (CHARACTER_DATA.uses_cloud_rune <= 0) {
-        displayRoll(ELEMENTS.actionRollDisplay, "No uses of Cloud Rune remaining.", false, false, card);
-        return;
-    }
-    
-    // Consume the resource
-    consumeResource('cloud_rune', ELEMENTS.cloudRuneUses, button);
-    
-    const resultText = `Cloud Rune used! You can use your reaction to redirect an attack.`;
-    displayRoll(ELEMENTS.actionRollDisplay, resultText, false, false, card);
-}
-
-/**
- * Handles "Tactical Mind" ability.
- * Rolls a d10, consumes a use (from Second Wind/Tactical Mind), and updates the UI.
- */
-function useTacticalMind(button, card) {
-    // Tactical Mind uses Second Wind/Tactical Mind charges
-    if (CHARACTER_DATA.uses_second_wind <= 0) {
-        displayRoll(ELEMENTS.actionRollDisplay, "No uses of Second Wind remaining for Tactical Mind.", false, false, card);
-        return;
-    }
-    
-    const rollString = button.dataset.roll; // "1d10"
-    const rollName = button.dataset.rollName;
-    
-    const roll = rollDiceString(rollString);
-    const bonus = roll.total;
-
-    // Consume the resource (from Second Wind and Tactical Mind)
-    consumeResource('second_wind', ELEMENTS.secondWindUses, ELEMENTS.rollSecondWind);
-    consumeResource('tactical_mind', ELEMENTS.tacticalMindUses, button);
-
-    const resultText = `${rollName}: Add +${bonus} to your failed ability check. [${roll.rollText}]`;
-    displayRoll(ELEMENTS.actionRollDisplay, resultText, false, false, card);
-}
-
-/**
- * Activates or deactivates "Giant's Might".
- * Consumes a use on activation. (Fixes activation bug #2)
- */
-function toggleGiantsMight(activate) {
-    if (activate) {
-        if (CHARACTER_DATA.uses_giants_might <= 0) {
-            displayRoll(ELEMENTS.actionRollDisplay, "No uses of Giant's Might remaining.", false, false, ELEMENTS.giantsMightCard);
-            return;
-        }
-        
-        // Consume resource and activate
-        if (consumeResource('giants_might', ELEMENTS.giantsMightUses, ELEMENTS.activateGiantsMight)) {
-            CHARACTER_DATA.status_giants_might = true;
-            updateGiantsMightStatus(true);
-            saveCharacterData();
-            displayRoll(ELEMENTS.actionRollDisplay, "Giant's Might activated!", false, false, ELEMENTS.giantsMightCard);
-        }
-    } else {
-        // Deactivate
-        CHARACTER_DATA.status_giants_might = false;
-        updateGiantsMightStatus(false);
-        saveCharacterData();
-        displayRoll(ELEMENTS.actionRollDisplay, "Giant's Might deactivated.", false, false, ELEMENTS.giantsMightCard);
-    }
-}
-
-/**
- * Updates the visual state of the Giant's Might card
- */
-function updateGiantsMightStatus(isActive) {
-    CHARACTER_DATA.status_giants_might = isActive;
-    
-    if (isActive) {
-        ELEMENTS.giantsMightStatus.textContent = "Active";
-        ELEMENTS.giantsMightStatus.classList.remove('bg-gray-700', 'text-gray-300');
-        ELEMENTS.giantsMightStatus.classList.add('bg-green-600', 'text-white');
-        ELEMENTS.activateGiantsMight.classList.add('hidden');
-        ELEMENTS.deactivateGiantsMight.classList.remove('hidden');
-    } else {
-        ELEMENTS.giantsMightStatus.textContent = "Inactive";
-        ELEMENTS.giantsMightStatus.classList.add('bg-gray-700', 'text-gray-300');
-        ELEMENTS.giantsMightStatus.classList.remove('bg-green-600', 'text-white');
-        ELEMENTS.activateGiantsMight.classList.remove('hidden');
-        ELEMENTS.deactivateGiantsMight.classList.add('hidden');
-    }
-    
-    // Update save throw bonuses to show (Adv)
-    updateSaveBonusDisplay();
-}
-
-// --- HP & REST LOGIC ---
-
-/**
- * Modifies the character's current HP by a given amount.
- */
-function modifyHp(amount) {
-    let currentHp = parseInt(ELEMENTS.currentHpInput.value, 10);
-    const maxHp = parseInt(ELEMENTS.maxHpSpan.textContent, 10);
-    
-    currentHp += amount;
-    currentHp = Math.max(0, Math.min(currentHp, maxHp)); // Clamp between 0 and maxHp
-    
-    ELEMENTS.currentHpInput.value = currentHp;
-    CHARACTER_DATA.hp = currentHp;
-    saveCharacterData();
-}
-
-/**
- * Handles changes to the HP or Temp HP input fields.
- */
-function handleHpChange(event) {
-    const input = event.target;
-    let value = parseInt(input.value, 10);
-    
-    // Ensure value is a number, default to 0 if not
-    if (isNaN(value)) {
-        value = 0;
-    }
-
-    if (input === ELEMENTS.currentHpInput) {
-        // Clamp current HP between 0 and Max HP
-        const maxHp = parseInt(ELEMENTS.maxHpSpan.textContent, 10);
-        if (value > maxHp) {
-            value = maxHp;
-            input.value = value; // Correct the input field
-        } else if (value < 0) {
-            value = 0;
-            input.value = value;
-        }
-        CHARACTER_DATA.hp = value;
-        
-    } else if (input === ELEMENTS.tempHpInput) {
-        // Temp HP can't be negative
-        if (value < 0) {
-            value = 0;
-            input.value = value;
-        }
-        CHARACTER_DATA.temp_hp = value;
-    }
-    
-    saveCharacterData();
-}
-
-/**
- * Performs a Long Rest.
- * Resets HP, all resources, and deactivates Giant's Might.
- */
-function handleLongRest() {
-    console.log("Performing Long Rest...");
-    
-    // Reset HP to max
-    const maxHp = parseInt(ELEMENTS.maxHpSpan.textContent, 10);
-    CHARACTER_DATA.hp = maxHp;
-    CHARACTER_DATA.temp_hp = 0;
-
-    // Reset all resources
-    CHARACTER_DATA.uses_second_wind = 3;
-    CHARACTER_DATA.uses_action_surge = 1;
-    CHARACTER_DATA.uses_giants_might = 2;
-    CHARACTER_DATA.uses_fire_rune = 1;
-    CHARACTER_DATA.uses_cloud_rune = 1;
-    CHARACTER_DATA.uses_tactical_mind = 3;
-    
-    // Deactivate statuses
-    CHARACTER_DATA.status_giants_might = false;
-
-    // Save and update the entire UI
-    saveCharacterData();
-    updateUiFromData();
-    
-    alert("Long Rest complete! HP and all resources have been restored.");
-}
-
-/**
- * Performs a Short Rest.
- * Resets Action Surge and Cloud Rune.
- */
-function handleShortRest() {
-    console.log("Performing Short Rest...");
-
-    // Reset short rest resources
-    CHARACTER_DATA.uses_action_surge = 1;
-    CHARACTER_DATA.uses_cloud_rune = 1;
-    
-    // Save and update the entire UI
-    saveCharacterData();
-    updateUiFromData();
-
-    alert("Short Rest complete! Action Surge and Cloud Rune have been restored.");
-}
-
-// --- (End of Chunk 4) ---
-
-// --- INVENTORY LOGIC (Full Restoration) ---
-
-/**
- * Generates a unique ID for a new inventory item.
- */
-function generateItemId() {
-    return 'item-' + Date.now() + Math.floor(Math.random() * 1000);
-}
-
-function handleInventoryFormChange(selected) {
-    ELEMENTS.weaponForm.classList.add('hidden');
-    ELEMENTS.armorForm.classList.add('hidden');
-    ELEMENTS.otherForm.classList.add('hidden');
-    
-    if (selected === 'Weapon') {
-        ELEMENTS.weaponForm.classList.remove('hidden');
-    } else if (selected === 'Armor') {
-        ELEMENTS.armorForm.classList.remove('hidden');
-    } else if (selected === 'Other') {
-        ELEMENTS.otherForm.classList.remove('hidden');
-    }
-}
-
-function addNewWeapon() {
-    const inputs = ELEMENTS.weaponFormInputs;
-    if (!inputs.name.value || !inputs.damage.value) {
-        alert("Please enter a name and damage string for the weapon.");
-        return;
-    }
-
-    const newWeapon = {
-        id: generateItemId(),
-        name: inputs.name.value,
-        type: "Weapon",
-        equipped: true,
-        proficient: inputs.proficiency.value === "Yes",
-        attackType: inputs.attackType.value,
-        damage: inputs.damage.value,
-        damageType: inputs.damageType.value,
-        reach: parseInt(inputs.reach.value, 10) || 5,
-        weight: parseInt(inputs.weight.value, 10) || 0,
-        cost: parseInt(inputs.cost.value, 10) || 0,
-        properties: inputs.properties.value,
-        notes: inputs.notes.value
-    };
-
-    CHARACTER_DATA.inventory.push(newWeapon);
-    renderInventory();
-    saveCharacterData();
-    updateEquippedActions(); // FIX: Update Actions page
-    alert(`Weapon "${newWeapon.name}" added and equipped!`);
-}
-
-function addNewArmor() {
-    const inputs = ELEMENTS.armorFormInputs;
-    if (!inputs.name.value || !inputs.ac.value) {
-        alert("Please enter a name and base AC for the armor.");
-        return;
-    }
-
-    const newArmor = {
-        id: generateItemId(),
-        name: inputs.name.value,
-        type: "Armor",
-        equipped: true,
-        armorType: inputs.type.value,
-        baseAC: parseInt(inputs.ac.value, 10) || 10,
-        maxDex: parseInt(inputs.maxDex.value, 10) || 0,
-        isProficient: inputs.isProficient.value === "Yes",
-        stealthDisadvantage: inputs.stealthDisadvantage.value === "Yes",
-        weight: parseInt(inputs.weight.value, 10) || 0,
-        cost: parseInt(inputs.cost.value, 10) || 0,
-        notes: inputs.notes.value
-    };
-
-    CHARACTER_DATA.inventory.push(newArmor);
-    renderInventory();
-    saveCharacterData();
-    updateEquippedActions(); // FIX: Update Actions page
-    alert(`Armor "${newArmor.name}" added and equipped!`);
-}
-
-function deleteItem(itemId) {
-    if (confirm("Are you sure you want to delete this item?")) {
-        CHARACTER_DATA.inventory = CHARACTER_DATA.inventory.filter(item => item.id !== itemId);
-        renderInventory();
-        saveCharacterData();
-        updateEquippedActions(); // FIX: Update Actions page
-    }
-}
-
-function toggleEquipItem(itemId) {
-    const item = CHARACTER_DATA.inventory.find(i => i.id === itemId);
-    if (item) {
-        // Toggle the equipped status
-        item.equipped = !item.equipped;
-        
-        // Handle armor exclusivity: unequip other armor of the same type
-        if (item.equipped && item.type === 'Armor') {
-            CHARACTER_DATA.inventory.forEach(otherItem => {
-                if (otherItem.id !== itemId && otherItem.type === 'Armor' && otherItem.equipped) {
-                    otherItem.equipped = false;
-                }
+const handleLoginLogout = () => {
+    if (userId) {
+        // Log out
+        auth.signOut();
+    } else if (isFirebaseConnected) {
+        // Log in
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+            .catch((error) => {
+                console.error("Login failed:", error);
+                alert(`Login Failed: ${error.message}`);
             });
-        }
-        
-        renderInventory();
-        saveCharacterData();
-        updateEquippedActions(); // FIX: Update Actions page
     }
-}
-
-function renderInventory() {
-    const container = ELEMENTS.inventoryListContainer;
-    container.innerHTML = '';
-    
-    if (CHARACTER_DATA.inventory.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-4">Inventory is empty.</p>';
-        return;
-    }
-
-    CHARACTER_DATA.inventory.forEach(item => {
-        let details = '';
-        if (item.type === 'Weapon') {
-            details = `${item.damage} ${item.damageType} | ${item.properties}`;
-        } else if (item.type === 'Armor') {
-            details = `AC ${item.baseAC} | ${item.armorType} | Weight: ${item.weight} lb.`;
-        } else {
-             details = `Cost: ${item.cost} gp | Weight: ${item.weight} lb.`;
-        }
-        
-        const equippedClass = item.equipped ? 'bg-yellow-800/20 border-yellow-700' : 'bg-gray-900 border-gray-700';
-        const buttonText = item.equipped ? 'UNEQUIP' : 'EQUIP';
-
-        const itemHtml = `
-            <div id="${item.id}" class="inventory-item ${equippedClass} rounded-lg p-4 shadow-md flex justify-between items-center space-x-4">
-                <div class="flex-grow">
-                    <h4 class="text-xl font-bold ${item.equipped ? 'text-yellow-300' : 'text-white'}">${item.name}</h4>
-                    <p class="text-sm text-gray-400">${details}</p>
-                </div>
-                <div class="flex space-x-2 flex-shrink-0">
-                    <button class="action-roll-button inventory-equip-button bg-blue-600 hover:bg-blue-700 border-blue-500" data-item-id="${item.id}">
-                        ${buttonText}
-                    </button>
-                    <button class="action-roll-button inventory-delete-button bg-red-600 hover:bg-red-700 border-red-500" data-item-id="${item.id}">
-                        DELETE
-                    </button>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', itemHtml);
-    });
-}
+};
 
 /**
- * FIX: Generates and updates weapon cards on the Actions page based on equipped inventory items.
+ * Saves the character data to Firebase or Local Storage.
  */
-function updateEquippedActions() {
-    const actionsList = document.getElementById('actions-list');
-    
-    // 1. Clear dynamically generated weapon cards (keep unarmed strike card)
-    const unarmedStrikeCard = document.getElementById('unarmed-strike-card');
-    let node = actionsList.firstElementChild;
-    while (node) {
-        if (node.id !== 'unarmed-strike-card') {
-            const next = node.nextElementSibling;
-            node.remove();
-            node = next;
-        } else {
-            node = node.nextElementSibling;
-        }
+const saveCharacterData = () => {
+    // 1. Clean the data model (ensure all inputs are correctly parsed)
+    // This is especially important for inputs that might store strings but should be numbers.
+    const dataToSave = JSON.parse(JSON.stringify(characterData)); // Deep copy
+
+    // 2. Save
+    if (userId && characterRef) {
+        // Firebase Save
+        characterRef.set(dataToSave)
+            .catch(error => {
+                console.error("Firebase save failed:", error);
+                // Optionally alert user
+            });
+    } else {
+        // Local Storage Save
+        localStorage.setItem(currentCharacterId, JSON.stringify(dataToSave));
     }
+};
 
-    // 2. Filter for equipped weapons
-    const equippedWeapons = CHARACTER_DATA.inventory.filter(item => item.type === 'Weapon' && item.equipped);
-
-    // 3. Generate and insert HTML for each weapon
-    equippedWeapons.forEach(weapon => {
-        // Assuming Thangrim's STR is +5, Prof is +2. Total Melee Mod: +7.
-        // Assuming Ranged Mod is just DEX: +0.
-        const hitMod = weapon.attackType === 'Melee' ? 7 : 0; 
-
-        const weaponCardHtml = `
-            <div id="${weapon.id}-card" class="action-card bg-gray-900 rounded-lg p-4 border border-gray-700 shadow-md">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-                    <h4 class="text-xl font-bold text-white">${weapon.name}</h4>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-center gap-4 mb-3 text-center">
-                    <div class="grid grid-cols-3 gap-4 flex-grow">
-                        <div>
-                            <div class="text-xs font-bold uppercase text-gray-400">Range</div>
-                            <div class="text-lg font-semibold">${weapon.reach}ft.</div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-bold uppercase text-gray-400">Hit / DC</div>
-                            <div class="text-lg font-semibold text-yellow-300">+${hitMod}</div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-bold uppercase text-gray-400">Damage</div>
-                            <div class="text-lg font-semibold">${weapon.damage} (${weapon.damageType})</div>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 flex-shrink-0 mt-3 sm:mt-0">
-                        <button class="action-roll-button" data-roll="1d20+${hitMod}"
-                            data-roll-name="${weapon.name} Hit" data-roll-type="hit" data-attack-type="${weapon.attackType}" data-damage-dice="${weapon.damage}" data-item-id="${weapon.id}">Roll Hit</button>
-                        <button class="action-roll-button" data-roll="${weapon.damage}"
-                            data-roll-name="${weapon.name} Dmg" data-roll-type="damage" data-attack-type="${weapon.attackType}" data-item-id="${weapon.id}">Roll Damage</button>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="text-xs font-bold uppercase text-gray-400">Notes</div>
-                    <p class="text-sm text-gray-300">${weapon.properties}${weapon.notes ? ' | ' + weapon.notes : ''}</p>
-                </div>
-            </div>
-        `;
-        actionsList.insertAdjacentHTML('beforeend', weaponCardHtml);
-    });
-}
-
-// --- COINAGE LOGIC (Full Restoration) ---
-
-function updateCoinUi() {
-    ELEMENTS.coin.pp_display.textContent = CHARACTER_DATA.coin.pp;
-    ELEMENTS.coin.gp_display.textContent = CHARACTER_DATA.coin.gp;
-    ELEMENTS.coin.ep_display.textContent = CHARACTER_DATA.coin.ep;
-    ELEMENTS.coin.sp_display.textContent = CHARACTER_DATA.coin.sp;
-    ELEMENTS.coin.cp_display.textContent = CHARACTER_DATA.coin.cp;
-}
-
-function clearCoinInputs() {
-    ELEMENTS.coin.pp_input.value = '0';
-    ELEMENTS.coin.gp_input.value = '0';
-    ELEMENTS.coin.ep_input.value = '0';
-    ELEMENTS.coin.sp_input.value = '0';
-    ELEMENTS.coin.cp_input.value = '0';
-}
-
-function modifyCoin(action) {
-    const factor = (action === 'add') ? 1 : -1;
-
-    const pp = parseInt(ELEMENTS.coin.pp_input.value, 10) || 0;
-    const gp = parseInt(ELEMENTS.coin.gp_input.value, 10) || 0;
-    const ep = parseInt(ELEMENTS.coin.ep_input.value, 10) || 0;
-    const sp = parseInt(ELEMENTS.coin.sp_input.value, 10) || 0;
-    const cp = parseInt(ELEMENTS.coin.cp_input.value, 10) || 0;
-
-    // Convert everything to Copper Pieces (cp) for easy math
-    let totalCp = (pp * 1000) + (gp * 100) + (ep * 50) + (sp * 10) + cp;
-    
-    // Convert current stored coins to cp
-    let currentTotalCp = (CHARACTER_DATA.coin.pp * 1000) + (CHARACTER_DATA.coin.gp * 100) + (CHARACTER_DATA.coin.ep * 50) + (CHARACTER_DATA.coin.sp * 10) + CHARACTER_DATA.coin.cp;
-    
-    // Calculate new total CP
-    let newTotalCp = currentTotalCp + (totalCp * factor);
-    
-    // Prevent negative total
-    newTotalCp = Math.max(0, newTotalCp);
-
-    // Convert back to standard currency (Greedy conversion)
-    CHARACTER_DATA.coin.pp = Math.floor(newTotalCp / 1000);
-    newTotalCp %= 1000;
-
-    CHARACTER_DATA.coin.gp = Math.floor(newTotalCp / 100);
-    newTotalCp %= 100;
-    
-    // Ep is non-standard but often used. We'll use 50cp/10sp
-    CHARACTER_DATA.coin.ep = 0; // Keeping it simple, avoid complex conversions/remainders for EP
-
-    CHARACTER_DATA.coin.sp = Math.floor(newTotalCp / 10);
-    newTotalCp %= 10;
-    
-    CHARACTER_DATA.coin.cp = newTotalCp;
-    
-    updateCoinUi();
-    clearCoinInputs();
-    saveCharacterData();
-}
-
-// --- PERSISTENCE & UI UPDATE (Full Restoration) ---
-
-const SAVE_KEY = 'dnd_character_sheet_data_thangrim';
-
-function saveCharacterData() {
-    try {
-        const dataString = JSON.stringify(CHARACTER_DATA);
-        localStorage.setItem(SAVE_KEY, dataString);
-        console.log("Character data saved.");
-    } catch (error) {
-        console.error("Failed to save character data:", error);
-    }
-}
-
-function loadCharacterData() {
-    try {
-        const dataString = localStorage.getItem(SAVE_KEY);
-        if (dataString) {
-            const loadedData = JSON.parse(dataString);
-            // Merge loaded data into the CHARACTER_DATA object
-            Object.assign(CHARACTER_DATA, loadedData);
-            console.log("Character data loaded.");
-        } else {
-            console.log("No saved data found. Using defaults.");
-        }
-    } catch (error) {
-        console.error("Failed to load character data:", error);
-        localStorage.setItem(SAVE_KEY + '_corrupted_' + Date.now(), localStorage.getItem(SAVE_KEY));
-        localStorage.removeItem(SAVE_KEY);
-    }
-}
+// Debounced version of the save function to limit database/storage writes
+const debouncedSave = debounce(saveCharacterData, 500);
 
 /**
- * Updates all UI elements to reflect the values in the CHARACTER_DATA object.
+ * Loads character data from Firebase or Local Storage.
  */
-function updateUiFromData() {
-    console.log("Updating UI from loaded data...");
-    
-    // HP
-    ELEMENTS.currentHpInput.value = CHARACTER_DATA.hp;
-    ELEMENTS.tempHpInput.value = CHARACTER_DATA.temp_hp;
-    
-    // Resources
-    ELEMENTS.secondWindUses.textContent = CHARACTER_DATA.uses_second_wind;
-    ELEMENTS.actionSurgeUses.textContent = CHARACTER_DATA.uses_action_surge;
-    ELEMENTS.giantsMightUses.textContent = CHARACTER_DATA.uses_giants_might;
-    ELEMENTS.fireRuneUses.textContent = CHARACTER_DATA.uses_fire_rune;
-    ELEMENTS.cloudRuneUses.textContent = CHARACTER_DATA.uses_cloud_rune;
-    ELEMENTS.tacticalMindUses.textContent = CHARACTER_DATA.uses_tactical_mind;
+const loadCharacterData = () => {
+    const finishLoading = (data) => {
+        // Merge loaded data with default structure to prevent missing fields
+        characterData = {
+            ...characterData, // Default structure
+            ...data,         // Overwrite with loaded data
+            // Ensure nested objects are also merged correctly if data is very old
+            abilities: { ...characterData.abilities, ...(data ? data.abilities : {}) },
+            saves: { ...characterData.saves, ...(data ? data.saves : {}) },
+            skills: { ...characterData.skills, ...(data ? data.skills : {}) },
+            currency: { ...characterData.currency, ...(data ? data.currency : {}) },
+            runes: { ...characterData.runes, ...(data ? data.runes : {}) },
+            inventory: data && data.inventory ? data.inventory : {},
+            attacks: data && data.attacks ? data.attacks : [],
+            features: data && data.features ? data.features : [],
+            deathSaves: data && data.deathSaves ? data.deathSaves : { successes: 0, failures: 0 },
+        };
+        
+        // 4. Update the UI with the loaded (or default) data
+        updateUI();
+        
+        // 5. Hide splash screen and show the app
+        setTimeout(() => {
+            ELEMENTS.splashScreen.classList.add('opacity-0');
+            ELEMENTS.splashScreen.addEventListener('transitionend', () => {
+                ELEMENTS.splashScreen.style.display = 'none';
+                ELEMENTS.appContainer.style.display = 'block';
+                // Trigger a UI recalculation after display is block
+                updateAllCalculatedStats(); 
+            }, { once: true });
+        }, 500);
+    };
 
-    // Text Areas
-    ELEMENTS.notesTextarea.value = CHARACTER_DATA.notes;
-    ELEMENTS.originStoryTextarea.value = CHARACTER_DATA.origin_story;
-    
-    // Coin
-    updateCoinUi();
-    
-    // Statuses
-    updateGiantsMightStatus(CHARACTER_DATA.status_giants_might);
+    if (userId && characterRef) {
+        // Firebase Load
+        characterRef.once('value')
+            .then((snapshot) => {
+                const data = snapshot.val();
+                finishLoading(data);
+            })
+            .catch(error => {
+                console.error("Firebase load failed:", error);
+                // Fallback to Local Storage on Firebase load failure
+                const localData = localStorage.getItem(currentCharacterId);
+                finishLoading(localData ? JSON.parse(localData) : {});
+            });
+    } else {
+        // Local Storage Load
+        const localData = localStorage.getItem(currentCharacterId);
+        finishLoading(localData ? JSON.parse(localData) : {});
+    }
+};
+
+// =========================================================================
+// 4. CORE UI UPDATE AND CALCULATION LOGIC
+// =========================================================================
+
+/**
+ * Updates all input fields and static displays based on characterData.
+ */
+const updateUI = () => {
+    // General Stats
+    ELEMENTS.characterName.value = characterData.name;
+    ELEMENTS.raceClassLevel.value = characterData.raceClassLevel;
+    ELEMENTS.profBonusInput.value = characterData.profBonus;
+    ELEMENTS.acInput.value = characterData.ac;
+    ELEMENTS.speedInput.value = characterData.speed;
+
+    // HP & Dice
+    ELEMENTS.maxHpInput.value = characterData.maxHp;
+    ELEMENTS.currentHpInput.value = characterData.currentHp;
+    ELEMENTS.tempHpInput.value = characterData.tempHp;
+    ELEMENTS.hitDiceSizeInput.value = characterData.hitDiceSize;
+    ELEMENTS.hitDiceCountInput.value = characterData.hitDiceCount;
+
+    // Ability Scores and Saving Throws
+    ELEMENTS.abilityScoreBoxes.forEach(box => {
+        const ability = box.dataset.ability;
+        const scoreInput = box.querySelector('.ability-score-input');
+        const modSpan = box.querySelector('.ability-modifier');
+        
+        // Update input and modifier
+        scoreInput.value = characterData.abilities[ability] || 10;
+        modSpan.textContent = formatModifier(getMod(characterData.abilities[ability] || 10));
+    });
+
+    ELEMENTS.saveThrowRows.forEach(row => {
+        const ability = row.dataset.ability;
+        const checkbox = row.querySelector('.prof-checkbox');
+        
+        // Update checkbox state
+        checkbox.checked = characterData.saves[ability] || false;
+    });
+
+    // Skills
+    ELEMENTS.skillRows.forEach(row => {
+        const skill = row.dataset.skill.replace(/-/g, ''); // Convert 'animal-handling' to 'animalHandling'
+        const select = row.querySelector('.prof-level-select');
+        
+        // Update select value
+        select.value = characterData.skills[skill] || 0;
+    });
+
+    // Death Saves
+    ELEMENTS.deathSaveCheckboxes.forEach((checkbox, index) => {
+        const type = checkbox.dataset.type; // 'success' or 'failure'
+        if (type === 'success') {
+            checkbox.checked = index < characterData.deathSaves.successes;
+        } else {
+            checkbox.checked = index < characterData.deathSaves.failures;
+        }
+    });
+
+    // Combat
+    ELEMENTS.spellCastingStatInput.value = characterData.spellCastingStat;
+    renderAttacks();
 
     // Inventory
     renderInventory();
-    updateEquippedActions();
     
-    // Resource Button States (e.g., disable if uses = 0)
-    updateResourceButtonStates();
-    
-    console.log("UI update complete.");
-}
-
-/**
- * Disables/Enables resource buttons based on remaining uses.
- */
-function updateResourceButtonStates() {
-    ELEMENTS.rollSecondWind.disabled = CHARACTER_DATA.uses_second_wind <= 0;
-    ELEMENTS.useActionSurge.disabled = CHARACTER_DATA.uses_action_surge <= 0;
-    ELEMENTS.activateGiantsMight.disabled = CHARACTER_DATA.uses_giants_might <= 0;
-    ELEMENTS.rollFireRuneDmg.disabled = CHARACTER_DATA.uses_fire_rune <= 0;
-    ELEMENTS.useCloudRune.disabled = CHARACTER_DATA.uses_cloud_rune <= 0;
-    ELEMENTS.rollTacticalMind.disabled = CHARACTER_DATA.uses_tactical_mind <= 0;
-}
-
-/**
- * Updates save throw displays for dynamic effects like Giant's Might.
- */
-function updateSaveBonusDisplay() {
-    // Only used to trigger visual refresh of save bonuses to show (Adv) on STR/CON
-    ELEMENTS.savesContainer.querySelectorAll('.save-rollable').forEach(saveElement => {
-        const stat = saveElement.dataset.stat;
-        const isAdvantage = CHARACTER_DATA.status_giants_might && (stat === "STR" || stat === "CON");
-        
-        saveElement.style.border = isAdvantage ? '1px solid #48bb78' : '1px solid #4a5568';
-        saveElement.style.backgroundColor = isAdvantage ? '#42412d' : '#2d3748';
+    // Currency
+    ELEMENTS.currencyInputs.forEach(input => {
+        const type = input.id.replace('-input', ''); // 'cp', 'sp', etc.
+        input.value = characterData.currency[type] || 0;
     });
-}
+
+    // Features
+    renderFeatures();
+    
+    // Feature Trackers
+    ELEMENTS.giantsMightUses.value = characterData.giantsMightUses;
+    ELEMENTS.actionSurgeUses.value = characterData.actionSurgeUses;
+    // Update Giant's Might UI
+    updateGiantsMightUI(characterData.giantsMightActive);
+    
+    // Runes
+    document.querySelectorAll('.rune-tracker').forEach(tracker => {
+        const rune = tracker.dataset.rune;
+        const usesInput = tracker.querySelector('.rune-uses-input');
+        usesInput.value = characterData.runes[rune] || 0;
+    });
+
+    // Notes & Origin
+    ELEMENTS.notesTextarea.value = characterData.notes;
+    ELEMENTS.originStoryTextarea.value = characterData.originStory;
+
+    // Finally, recalculate all derived stats
+    updateAllCalculatedStats();
+};
 
 /**
- * Initializes the persistence layer: loads data, then updates the UI.
+ * Calculates and updates all derived stats: Initiative, Saves, Skills, Passive Scores, Encumbrance.
  */
-function initializePersistence() {
-    loadCharacterData();
-    updateUiFromData();
-}
+const updateAllCalculatedStats = () => {
+    const profBonus = getProfBonus();
+    const strScore = characterData.abilities.STR;
+    const dexScore = characterData.abilities.DEX;
+    const wisScore = characterData.abilities.WIS;
+    const strMod = getMod(strScore);
+    const dexMod = getMod(dexScore);
+    const wisMod = getMod(wisScore);
+    
+    // --- 1. Initiative ---
+    // Initiative is simply DEX modifier
+    let initiativeMod = dexMod;
+    ELEMENTS.initiativeInput.value = initiativeMod;
+    characterData.initiative = initiativeMod;
 
-// --- APP ENTRY POINT ---
+    // --- 2. Saving Throws ---
+    ELEMENTS.saveThrowRows.forEach(row => {
+        const ability = row.dataset.ability;
+        const abilityScore = characterData.abilities[ability];
+        const abilityMod = getMod(abilityScore);
+        const isProf = characterData.saves[ability];
+        
+        let saveMod = abilityMod + (isProf ? profBonus : 0);
+        
+        // Update the display
+        row.querySelector('.save-modifier').textContent = formatModifier(saveMod);
+        // Update the roll button data attribute
+        row.querySelector('.roll-d20').dataset.rollMod = saveMod;
+    });
 
-// Wait for the DOM to be fully loaded before running the app.
-document.addEventListener('DOMContentLoaded', onDomLoaded);
+    // --- 3. Skills ---
+    ELEMENTS.skillRows.forEach(row => {
+        const skillName = row.dataset.skill.replace(/-/g, '');
+        const ability = row.dataset.ability;
+        const profLevel = characterData.skills[skillName]; // 0, 1, or 2
+        const abilityScore = characterData.abilities[ability];
+        const abilityMod = getMod(abilityScore);
+        
+        let skillMod = abilityMod;
+        
+        if (profLevel === 1) {
+            // Proficient
+            skillMod += profBonus;
+        } else if (profLevel === 2) {
+            // Expertise
+            skillMod += (profBonus * 2);
+        }
+        
+        // Update the display
+        row.querySelector('.skill-modifier').textContent = formatModifier(skillMod);
+        // Update the roll button data attribute
+        row.querySelector('.roll-d20').dataset.rollMod = skillMod;
+        
+        // Update the data model with the calculated skill mod for passive scores
+        characterData.skills[skillName + 'Mod'] = skillMod;
+    });
+
+    // --- 4. Passive Scores ---
+    // Passive Perception = 10 + Perception Mod
+    const perceptionMod = characterData.skills.perceptionMod || wisMod; // Use calculated mod or fallback to WIS mod
+    const passivePerception = 10 + perceptionMod;
+    ELEMENTS.passivePerception.textContent = passivePerception;
+
+    // Passive Investigation = 10 + Investigation Mod
+    const investigationMod = characterData.skills.investigationMod || getMod(characterData.abilities.INT); // Use calculated mod or fallback to INT mod
+    const passiveInvestigation = 10 + investigationMod;
+    ELEMENTS.passiveInvestigation.textContent = passiveInvestigation;
+
+    // Passive Insight = 10 + Insight Mod
+    const insightMod = characterData.skills.insightMod || wisMod; // Use calculated mod or fallback to WIS mod
+    const passiveInsight = 10 + insightMod;
+    ELEMENTS.passiveInsight.textContent = passiveInsight;
+    
+    // --- 5. Spell Save DC and Attack Bonus ---
+    const spellStat = characterData.spellCastingStat;
+    let spellMod = 0;
+    if (spellStat !== 'None') {
+        spellMod = getMod(characterData.abilities[spellStat]);
+    }
+    
+    // Spell Save DC = 8 + Proficiency Bonus + Spellcasting Ability Modifier
+    const spellSaveDC = 8 + profBonus + spellMod;
+    ELEMENTS.spellSaveDc.textContent = spellSaveDC;
+
+    // Spell Attack Bonus = Proficiency Bonus + Spellcasting Ability Modifier
+    const spellAttackBonus = profBonus + spellMod;
+    ELEMENTS.spellAttackBonus.textContent = formatModifier(spellAttackBonus);
+
+    // --- 6. Attacks ---
+    // This needs to be done after ability mods are calculated
+    updateAttackToHits(); 
+
+    // --- 7. Encumbrance ---
+    const totalWeight = Object.values(characterData.inventory).reduce((total, item) => {
+        return total + (parseFloat(item.weight) || 0) * (parseInt(item.quantity) || 0);
+    }, 0);
+    const carryingCapacity = strScore * 15; // Capacity is STR * 15
+    const encumberedThreshold = strScore * 5;
+    const heavilyEncumberedThreshold = strScore * 10;
+    
+    ELEMENTS.totalWeight.textContent = totalWeight.toFixed(1);
+    ELEMENTS.carryingCapacity.textContent = carryingCapacity;
+
+    let statusText = 'Normal';
+    let statusColor = 'text-green-400';
+
+    if (totalWeight > heavilyEncumberedThreshold) {
+        statusText = 'Heavily Encumbered!';
+        statusColor = 'text-red-500';
+    } else if (totalWeight > encumberedThreshold) {
+        statusText = 'Encumbered';
+        statusColor = 'text-yellow-500';
+    }
+
+    ELEMENTS.encumbranceStatus.textContent = statusText;
+    ELEMENTS.encumbranceStatus.className = `text-center mt-3 text-sm font-semibold ${statusColor}`;
+
+    // Always save after a full calculation cycle
+    debouncedSave();
+};
+
+
+// =========================================================================
+// 5. EVENT HANDLERS AND LISTENERS
+// =========================================================================
+
+/**
+ * Handles navigation clicks.
+ * @param {Event} event 
+ */
+const handleNavigation = (event) => {
+    const targetButton = event.target.closest('.nav-button');
+    if (!targetButton) return;
+
+    const targetPageId = targetButton.dataset.page;
+
+    // 1. Update Navigation Bar UI
+    ELEMENTS.navButtons.forEach(button => {
+        button.classList.remove('active');
+        button.style.borderTopWidth = '0px';
+        button.style.borderTopColor = 'transparent';
+    });
+
+    targetButton.classList.add('active');
+    targetButton.style.borderTopWidth = '4px';
+    targetButton.style.borderTopColor = '#ecc94b';
+
+    // 2. Update Content Visibility
+    document.querySelectorAll('.page-content').forEach(page => {
+        if (page.id === targetPageId) {
+            page.classList.remove('hidden');
+        } else {
+            page.classList.add('hidden');
+        }
+    });
+};
+
+/**
+ * Handles changes to any primary input field (name, ability score, AC, etc.)
+ * @param {Event} event 
+ */
+const handleStatInputChange = (event) => {
+    const input = event.target;
+    let value = input.value;
+    const tagName = input.tagName;
+    
+    // Determine if the value is a number and parse it
+    if (input.type === 'number' || input.id.includes('input') || input.className.includes('ability-score-input')) {
+        // Strip non-numeric characters for number inputs
+        value = parseInt(value) || 0;
+        input.value = value;
+    }
+
+    // 1. Update the Data Model
+    if (input.id === 'character-name') {
+        characterData.name = value;
+    } else if (input.id === 'race-class-level') {
+        characterData.raceClassLevel = value;
+    } else if (input.id === 'prof-bonus-input') {
+        characterData.profBonus = value;
+    } else if (input.id === 'ac-input') {
+        characterData.ac = value;
+    } else if (input.id === 'speed-input') {
+        characterData.speed = value;
+    } else if (input.id === 'max-hp-input') {
+        characterData.maxHp = value;
+        // Don't let current HP exceed max HP
+        if (characterData.currentHp > value) {
+            characterData.currentHp = value;
+            ELEMENTS.currentHpInput.value = value;
+        }
+    } else if (input.id === 'hit-dice-size-input') {
+        characterData.hitDiceSize = value;
+    } else if (input.id === 'hit-dice-count-input') {
+        characterData.hitDiceCount = value;
+    } else if (input.className.includes('currency-input')) {
+        const currencyType = input.id.replace('-input', '');
+        characterData.currency[currencyType] = value;
+    } else if (input.className.includes('ability-score-input')) {
+        const abilityBox = input.closest('.ability-score-box');
+        const ability = abilityBox.dataset.ability;
+        characterData.abilities[ability] = value;
+    } else if (input.id === 'spell-casting-stat-input') {
+        characterData.spellCastingStat = value;
+    } else if (input.id === 'giants-might-uses') {
+        characterData.giantsMightUses = value;
+    } else if (input.id === 'action-surge-uses') {
+        characterData.actionSurgeUses = value;
+    } else if (input.className.includes('rune-uses-input')) {
+        const runeTracker = input.closest('.rune-tracker');
+        const rune = runeTracker.dataset.rune;
+        characterData.runes[rune] = value;
+    }
+    
+    // 2. Recalculate and Save
+    updateAllCalculatedStats();
+};
+
+/**
+ * Handles changes to HP inputs, ensuring data integrity.
+ * @param {Event} event 
+ */
+const handleHpChange = (event) => {
+    let value = parseInt(event.target.value) || 0;
+    
+    if (event.target === ELEMENTS.currentHpInput) {
+        // Current HP
+        // Ensure current HP does not exceed max HP unless it's a temporary effect 
+        // that hasn't cleared temp HP yet, but for simplicity:
+        if (value > characterData.maxHp && characterData.tempHp === 0) {
+            value = characterData.maxHp;
+            event.target.value = value;
+        }
+        characterData.currentHp = value;
+
+        // Apply visual cue for low/high HP (damage/healing)
+        if (value <= 0) {
+            event.target.classList.add('text-red-600');
+            event.target.classList.remove('text-red-400');
+        } else if (value < characterData.maxHp / 2) {
+            event.target.classList.add('text-red-400');
+            event.target.classList.remove('text-red-600');
+        } else {
+            event.target.classList.remove('text-red-400', 'text-red-600');
+            event.target.classList.add('text-white');
+        }
+
+    } else if (event.target === ELEMENTS.tempHpInput) {
+        // Temporary HP
+        characterData.tempHp = value;
+    }
+    
+    debouncedSave();
+};
+
+/**
+ * Handles checkbox clicks for Saving Throws and Death Saves.
+ * @param {Event} event 
+ */
+const handleCheckboxChange = (event) => {
+    const checkbox = event.target;
+
+    if (checkbox.closest('.saving-throw-row')) {
+        // Saving Throw Proficiency Change
+        const ability = checkbox.closest('.saving-throw-row').dataset.ability;
+        characterData.saves[ability] = checkbox.checked;
+        updateAllCalculatedStats();
+    } else if (checkbox.className.includes('death-save-checkbox')) {
+        // Death Save Change
+        const type = checkbox.dataset.type; // 'success' or 'failure'
+        
+        // This is complex because clicking an earlier box should check/uncheck all later ones.
+        const allOfType = Array.from(document.querySelectorAll(`.death-save-checkbox[data-type="${type}"]`));
+        const index = allOfType.indexOf(checkbox);
+        
+        // Update all previous checkboxes based on the clicked one
+        allOfType.forEach((cb, i) => {
+            if (i <= index) {
+                cb.checked = checkbox.checked;
+            } else if (checkbox.checked) {
+                // If checking an earlier box, don't uncheck a later one if it's already checked (this maintains 5e rules)
+            } else {
+                cb.checked = false;
+            }
+        });
+        
+        // Recalculate count
+        const count = allOfType.filter(cb => cb.checked).length;
+        characterData.deathSaves[`${type}es`] = count;
+        
+        debouncedSave();
+    }
+};
+
+/**
+ * Handles change of skill proficiency level (select box).
+ * @param {Event} event 
+ */
+const handleSkillProficiencyChange = (event) => {
+    const select = event.target;
+    const skillRow = select.closest('.skill-row');
+    const skillName = skillRow.dataset.skill.replace(/-/g, '');
+    
+    // Value is 0 (None), 1 (Proficiency), or 2 (Expertise)
+    characterData.skills[skillName] = parseInt(select.value);
+    
+    updateAllCalculatedStats();
+};
+
+// Debounced text area handlers
+const debouncedNotesChange = debounce(() => {
+    characterData.notes = ELEMENTS.notesTextarea.value;
+    saveCharacterData();
+}, 1000);
+
+const debouncedOriginStoryChange = debounce(() => {
+    characterData.originStory = ELEMENTS.originStoryTextarea.value;
+    saveCharacterData();
+}, 1000);
+
+// =========================================================================
+// 6. DICE ROLL LOGIC
+// =========================================================================
+
+/**
+ * Simulates a single dice roll.
+ * @param {number} sides - Number of sides on the die (e.g., 20, 6)
+ * @returns {number} The roll result
+ */
+const rollDice = (sides) => Math.floor(Math.random() * sides) + 1;
+
+/**
+ * Parses a damage string (e.g., "2d6+3") and rolls the dice.
+ * @param {string} damageString - The damage roll formula
+ * @returns {{total: number, breakdown: string}}
+ */
+const rollDamage = (damageString) => {
+    let totalDamage = 0;
+    let breakdown = [];
+    
+    // Regex to find dice rolls (NdN) and modifiers (+N or -N)
+    const parts = damageString.match(/(\d*d\d+)|([+-]\s*\d+)/gi);
+    
+    if (!parts) {
+        return { total: 0, breakdown: 'Invalid Damage Formula' };
+    }
+    
+    parts.forEach(part => {
+        part = part.trim();
+        if (part.includes('d')) {
+            // Dice roll (e.g., 2d6)
+            const [numDice, sides] = part.split('d').map(n => parseInt(n) || 1);
+            let diceRolls = [];
+            let diceTotal = 0;
+            for (let i = 0; i < numDice; i++) {
+                const roll = rollDice(sides);
+                diceRolls.push(roll);
+                diceTotal += roll;
+            }
+            totalDamage += diceTotal;
+            breakdown.push(`(${diceRolls.join(' + ')})`);
+        } else {
+            // Modifier (e.g., +3 or -1)
+            const modifier = parseInt(part.replace(/\s/g, '')) || 0;
+            totalDamage += modifier;
+            breakdown.push(`${modifier >= 0 ? '+' : ''}${modifier}`);
+        }
+    });
+
+    // Simplify the breakdown string by removing the '+' from the first element if it's a modifier
+    let finalBreakdown = breakdown.join(' ').replace(/\s\+/, ' + ').trim();
+    if (finalBreakdown.startsWith('+')) {
+        finalBreakdown = finalBreakdown.substring(1).trim();
+    }
+    
+    return { 
+        total: totalDamage, 
+        breakdown: finalBreakdown,
+    };
+};
+
+/**
+ * Handles all D20 roll button clicks (Ability, Save, Skill, Attack).
+ * @param {Event} event 
+ */
+const handleD20Roll = (event) => {
+    const rollButton = event.target.closest('.roll-d20');
+    if (!rollButton) return;
+
+    const rollType = rollButton.dataset.rollType;
+    const stat = rollButton.dataset.rollStat;
+    let modifier = parseInt(rollButton.dataset.rollMod) || 0;
+    let damageRollFormula = rollButton.dataset.damageRoll;
+
+    // Special handling for ability checks (they don't have rollMod pre-set on buttons, so we calculate here)
+    if (rollType === 'ability') {
+        modifier = getMod(characterData.abilities[stat] || 10);
+    }
+
+    // 1. Roll the D20
+    const d20Roll = rollDice(20);
+    const totalResult = d20Roll + modifier;
+
+    let titleText = '';
+    let typeText = '';
+    let breakdownText = `Roll: ${d20Roll} ${formatModifier(modifier)} = **${totalResult}**`;
+    let damageResultText = '';
+    
+    // 2. Set Modal Content
+    switch (rollType) {
+        case 'ability':
+            titleText = `${stat} Ability Check`;
+            typeText = `Rolling d20 + ${stat} Modifier:`;
+            break;
+        case 'save':
+            titleText = `${stat} Saving Throw`;
+            typeText = `Rolling d20 + ${stat} Save Bonus:`;
+            break;
+        case 'skill':
+            const skillName = stat.charAt(0).toUpperCase() + stat.slice(1).replace(/([A-Z])/g, ' $1');
+            titleText = `${skillName} Check`;
+            typeText = `Rolling d20 + ${skillName} Bonus:`;
+            break;
+        case 'attack':
+            titleText = `${rollButton.closest('.attack-card').querySelector('.attack-name').textContent} Attack Roll`;
+            typeText = `Rolling d20 + To Hit Bonus:`;
+            
+            // Critical Hit/Miss detection for attack rolls
+            if (d20Roll === 20) {
+                breakdownText += ' - **CRITICAL HIT!**';
+            } else if (d20Roll === 1) {
+                breakdownText += ' - **CRITICAL MISS!**';
+            }
+            
+            // Damage Roll (if formula exists)
+            if (damageRollFormula) {
+                // If critical hit, double the dice before adding fixed modifier
+                let damageResult;
+                if (d20Roll === 20) {
+                    const doubledDiceFormula = damageRollFormula.replace(/(\d*)d(\d+)/g, (match, p1, p2) => {
+                        const numDice = parseInt(p1 || 1);
+                        return (numDice * 2) + 'd' + p2;
+                    });
+                    damageResult = rollDamage(doubledDiceFormula);
+                    damageResultText = `CRIT DAMAGE: **${damageResult.total}**<br><span class="text-xs">(${damageResult.breakdown})</span>`;
+                } else {
+                    damageResult = rollDamage(damageRollFormula);
+                    damageResultText = `DAMAGE: **${damageResult.total}**<br><span class="text-xs">(${damageResult.breakdown})</span>`;
+                }
+                
+                // Show damage result in modal
+                ELEMENTS.rollModalDamageResult.classList.remove('hidden');
+            }
+            break;
+        case 'custom':
+            // Add custom dice roll logic here if needed (e.g., 4d6 drop lowest)
+            titleText = 'Custom Roll';
+            typeText = 'Rolling a D20:';
+            break;
+        default:
+            return; // Exit if roll type is unknown
+    }
+    
+    // 3. Populate and Display Modal
+    ELEMENTS.rollModalTitle.textContent = titleText;
+    ELEMENTS.rollModalType.textContent = typeText;
+    ELEMENTS.rollModalResult.textContent = totalResult;
+    ELEMENTS.rollModalBreakdown.innerHTML = breakdownText;
+    ELEMENTS.rollModalDamageResult.innerHTML = damageResultText;
+
+    // Show modal with animation
+    ELEMENTS.rollModal.classList.remove('hidden');
+    // Force reflow to ensure transition runs
+    void ELEMENTS.rollModal.offsetWidth; 
+    ELEMENTS.rollModal.classList.remove('opacity-0');
+    ELEMENTS.rollModal.querySelector('div').classList.remove('scale-95');
+    ELEMENTS.rollModal.querySelector('div').classList.add('scale-100');
+};
+
+/**
+ * Closes the dice roll modal.
+ */
+const closeRollModal = () => {
+    // Hide modal with reverse animation
+    ELEMENTS.rollModal.classList.add('opacity-0');
+    ELEMENTS.rollModal.querySelector('div').classList.remove('scale-100');
+    ELEMENTS.rollModal.querySelector('div').classList.add('scale-95');
+
+    ELEMENTS.rollModal.addEventListener('transitionend', () => {
+        ELEMENTS.rollModal.classList.add('hidden');
+        ELEMENTS.rollModalDamageResult.classList.add('hidden');
+    }, { once: true });
+};
+
+// =========================================================================
+// 7. COMBAT LOGIC (Attacks)
+// =========================================================================
+
+/**
+ * Renders the current list of attacks to the UI.
+ */
+const renderAttacks = () => {
+    ELEMENTS.attacksList.innerHTML = '';
+    
+    if (characterData.attacks.length === 0) {
+        ELEMENTS.attacksList.innerHTML = '<p class="text-gray-400 text-center italic">No attacks added yet.</p>';
+        return;
+    }
+
+    characterData.attacks.forEach(attack => {
+        const attackElement = document.createElement('div');
+        attackElement.className = 'attack-card bg-gray-700 p-3 rounded-md flex justify-between items-center border border-gray-500 hover:border-yellow-400 transition duration-150 ease-in-out';
+        attackElement.dataset.attackId = attack.id;
+
+        // Calculate To-Hit Bonus
+        let toHitMod = 0;
+        if (attack.stat === 'Custom') {
+            // Placeholder for a true custom bonus input if implemented
+            toHitMod = 0; 
+        } else if (characterData.abilities[attack.stat]) {
+            const abilityMod = getMod(characterData.abilities[attack.stat]);
+            const profBonus = getProfBonus();
+            toHitMod = abilityMod + profBonus;
+        }
+        
+        // Save the calculated mod to the attack object for persistence and updateAttackToHits
+        attack.toHitMod = toHitMod;
+        
+        attackElement.innerHTML = `
+            <span class="attack-name text-lg font-semibold w-1/4 truncate">${attack.name}</span>
+            <div class="flex items-center space-x-4 w-3/4 justify-end">
+                <span class="attack-to-hit text-lg font-bold w-1/5 text-center">${formatModifier(toHitMod)}</span>
+                <span class="attack-damage text-lg w-2/5 text-center">${attack.damage}</span>
+                <button class="roll-button bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded roll-d20 w-1/5 transition duration-150 ease-in-out" 
+                        data-roll-type="attack" 
+                        data-roll-stat="${attack.stat}" 
+                        data-roll-mod="${toHitMod}"
+                        data-damage-roll="${attack.damage}">
+                    Attack
+                </button>
+                <button class="delete-attack-button text-red-400 hover:text-red-500 transition duration-150 ease-in-out" data-attack-id="${attack.id}">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        `;
+
+        ELEMENTS.attacksList.appendChild(attackElement);
+    });
+};
+
+/**
+ * Updates the To-Hit bonus displayed on attack cards when ability scores or prof bonus changes.
+ */
+const updateAttackToHits = () => {
+    // Re-calculate the toHitMod for each attack in the data model and update the UI
+    characterData.attacks.forEach(attack => {
+        let toHitMod = 0;
+        if (attack.stat === 'Custom') {
+            toHitMod = 0; // Placeholder
+        } else if (characterData.abilities[attack.stat]) {
+            const abilityMod = getMod(characterData.abilities[attack.stat]);
+            const profBonus = getProfBonus();
+            toHitMod = abilityMod + profBonus;
+        }
+
+        attack.toHitMod = toHitMod;
+        
+        // Update UI elements
+        const card = ELEMENTS.attacksList.querySelector(`.attack-card[data-attack-id="${attack.id}"]`);
+        if (card) {
+            card.querySelector('.attack-to-hit').textContent = formatModifier(toHitMod);
+            card.querySelector('.roll-d20').dataset.rollMod = toHitMod;
+        }
+    });
+};
+
+/**
+ * Adds a new attack action to the data model and rerenders.
+ * @param {Event} event 
+ */
+const addAttack = (event) => {
+    event.preventDefault();
+    
+    const name = ELEMENTS.attackNameInput.value.trim();
+    const stat = ELEMENTS.attackStatInput.value;
+    const damage = ELEMENTS.attackDamageInput.value.trim();
+    
+    if (!name || !stat || !damage) {
+        alert('Please fill out all fields for the attack.');
+        return;
+    }
+    
+    const newAttack = {
+        id: generateUniqueId(),
+        name: name,
+        stat: stat,
+        damage: damage,
+    };
+    
+    characterData.attacks.push(newAttack);
+    
+    // Clear form
+    ELEMENTS.attackNameInput.value = '';
+    ELEMENTS.attackStatInput.value = '';
+    ELEMENTS.attackDamageInput.value = '';
+
+    renderAttacks();
+    debouncedSave();
+};
+
+/**
+ * Deletes an attack action from the data model and rerenders.
+ * @param {string} attackId 
+ */
+const deleteAttack = (attackId) => {
+    characterData.attacks = characterData.attacks.filter(attack => attack.id !== attackId);
+    renderAttacks();
+    debouncedSave();
+};
+
+
+// =========================================================================
+// 8. INVENTORY LOGIC
+// =========================================================================
+
+/**
+ * Renders the inventory list to the table.
+ */
+const renderInventory = () => {
+    ELEMENTS.inventoryListTableBody.innerHTML = '';
+    const inventoryKeys = Object.keys(characterData.inventory);
+
+    if (inventoryKeys.length === 0) {
+        ELEMENTS.inventoryListTableBody.appendChild(ELEMENTS.inventoryPlaceholder);
+        return;
+    }
+    
+    // Remove placeholder if items exist
+    if (ELEMENTS.inventoryPlaceholder.parentNode) {
+        ELEMENTS.inventoryPlaceholder.remove();
+    }
+
+    inventoryKeys.forEach(itemId => {
+        const item = characterData.inventory[itemId];
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-700 transition duration-150 ease-in-out';
+        
+        row.innerHTML = `
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-white">${item.name}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-center">
+                <input type="number" data-item-id="${itemId}" data-field="quantity" value="${item.quantity}" min="1" class="inventory-field-input w-16 text-center bg-gray-600 rounded border border-gray-500 focus:border-yellow-400">
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-center">
+                <input type="number" data-item-id="${itemId}" data-field="weight" value="${item.weight}" min="0" step="0.1" class="inventory-field-input w-20 text-center bg-gray-600 rounded border border-gray-500 focus:border-yellow-400">
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium text-center">
+                <button class="delete-item-button text-red-400 hover:text-red-500 transition duration-150 ease-in-out" data-item-id="${itemId}">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+
+        ELEMENTS.inventoryListTableBody.appendChild(row);
+    });
+
+    // Recalculate encumbrance after rendering
+    updateAllCalculatedStats(); 
+};
+
+/**
+ * Adds a new item to the inventory.
+ * @param {Event} event 
+ */
+const addItem = (event) => {
+    event.preventDefault();
+    
+    const name = ELEMENTS.itemNameInput.value.trim();
+    const quantity = parseInt(ELEMENTS.itemQuantityInput.value) || 1;
+    const weight = parseFloat(ELEMENTS.itemWeightInput.value) || 0;
+    
+    if (!name) {
+        alert('Please enter a name for the item.');
+        return;
+    }
+    
+    const newItem = {
+        name: name,
+        quantity: quantity,
+        weight: weight,
+    };
+    
+    const itemId = generateUniqueId();
+    characterData.inventory[itemId] = newItem;
+    
+    // Clear form
+    ELEMENTS.itemNameInput.value = '';
+    ELEMENTS.itemQuantityInput.value = 1;
+    ELEMENTS.itemWeightInput.value = 0;
+
+    renderInventory();
+    debouncedSave();
+};
+
+/**
+ * Deletes an item from the inventory.
+ * @param {string} itemId 
+ */
+const deleteItem = (itemId) => {
+    if (characterData.inventory[itemId]) {
+        delete characterData.inventory[itemId];
+        renderInventory();
+        debouncedSave();
+    }
+};
+
+/**
+ * Handles changes to individual inventory item fields (quantity, weight).
+ * @param {Event} event 
+ */
+const handleInventoryFieldChange = (event) => {
+    const input = event.target;
+    const itemId = input.dataset.itemId;
+    const field = input.dataset.field;
+    
+    if (!itemId || !field || !characterData.inventory[itemId]) return;
+
+    let value = input.value;
+    
+    if (field === 'quantity') {
+        value = parseInt(value) || 1;
+        input.value = Math.max(1, value); // Ensure quantity is at least 1
+    } else if (field === 'weight') {
+        value = parseFloat(value) || 0;
+        input.value = Math.max(0, value); // Ensure weight is non-negative
+    }
+    
+    characterData.inventory[itemId][field] = value;
+
+    updateAllCalculatedStats(); // Triggers encumbrance recalculation and debounced save
+};
+
+
+// =========================================================================
+// 9. FEATURES & RESOURCE TRACKING LOGIC
+// =========================================================================
+
+/**
+ * Renders the general features list.
+ */
+const renderFeatures = () => {
+    ELEMENTS.featuresList.innerHTML = '';
+    
+    if (characterData.features.length === 0) {
+        ELEMENTS.featuresPlaceholder.classList.remove('hidden');
+        ELEMENTS.featuresList.appendChild(ELEMENTS.featuresPlaceholder);
+        return;
+    }
+    
+    ELEMENTS.featuresPlaceholder.classList.add('hidden');
+
+    characterData.features.forEach(feature => {
+        const featureElement = document.createElement('div');
+        featureElement.className = 'feature-card bg-gray-700 p-3 rounded-md flex justify-between items-start border border-gray-500';
+        
+        featureElement.innerHTML = `
+            <textarea data-feature-id="${feature.id}" class="feature-name-textarea w-full bg-transparent border-none resize-none focus:outline-none focus:border-yellow-400 p-0" rows="1">${feature.name}</textarea>
+            <button class="delete-feature-button text-red-400 hover:text-red-500 transition duration-150 ease-in-out ml-3 flex-shrink-0" data-feature-id="${feature.id}">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+
+        // Auto-adjust textarea height
+        const textarea = featureElement.querySelector('.feature-name-textarea');
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+            handleFeatureNameChange({target: textarea}); // Save on input
+        });
+        // Set initial height
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+
+        ELEMENTS.featuresList.appendChild(featureElement);
+    });
+};
+
+/**
+ * Adds a new feature to the list.
+ * @param {Event} event 
+ */
+const addFeature = (event) => {
+    event.preventDefault();
+    
+    const name = ELEMENTS.featureNameInput.value.trim();
+    
+    if (!name) {
+        alert('Please enter a feature name.');
+        return;
+    }
+    
+    const newFeature = {
+        id: generateUniqueId(),
+        name: name,
+    };
+    
+    characterData.features.push(newFeature);
+    
+    // Clear form
+    ELEMENTS.featureNameInput.value = '';
+
+    renderFeatures();
+    debouncedSave();
+};
+
+/**
+ * Deletes a feature.
+ * @param {string} featureId 
+ */
+const deleteFeature = (featureId) => {
+    characterData.features = characterData.features.filter(feature => feature.id !== featureId);
+    renderFeatures();
+    debouncedSave();
+};
+
+/**
+ * Handles in-place editing of feature names via textarea.
+ * @param {Event} event 
+ */
+const handleFeatureNameChange = (event) => {
+    const textarea = event.target;
+    const featureId = textarea.dataset.featureId;
+    
+    const feature = characterData.features.find(f => f.id === featureId);
+    if (feature) {
+        feature.name = textarea.value.trim();
+        debouncedSave();
+    }
+};
+
+// --- Giant's Might Tracker Logic ---
+
+/**
+ * Updates the Giant's Might UI based on its active state.
+ * @param {boolean} isActive 
+ */
+const updateGiantsMightUI = (isActive) => {
+    if (isActive) {
+        ELEMENTS.giantsMightStatus.textContent = 'Status: ACTIVE (Bonus Damage)';
+        ELEMENTS.giantsMightStatus.classList.remove('text-gray-400');
+        ELEMENTS.giantsMightStatus.classList.add('text-green-400');
+        ELEMENTS.giantsMightToggle.textContent = 'Deactivate';
+        ELEMENTS.giantsMightToggle.classList.remove('bg-green-500', 'hover:bg-green-600');
+        ELEMENTS.giantsMightToggle.classList.add('bg-red-500', 'hover:bg-red-600');
+    } else {
+        ELEMENTS.giantsMightStatus.textContent = 'Status: Inactive';
+        ELEMENTS.giantsMightStatus.classList.remove('text-green-400');
+        ELEMENTS.giantsMightStatus.classList.add('text-gray-400');
+        ELEMENTS.giantsMightToggle.textContent = 'Activate';
+        ELEMENTS.giantsMightToggle.classList.remove('bg-red-500', 'hover:bg-red-600');
+        ELEMENTS.giantsMightToggle.classList.add('bg-green-500', 'hover:bg-green-600');
+    }
+};
+
+/**
+ * Toggles the Giant's Might active state and expends a use if activating.
+ */
+const toggleGiantsMight = () => {
+    const currentlyActive = characterData.giantsMightActive;
+
+    if (currentlyActive) {
+        // Deactivate
+        characterData.giantsMightActive = false;
+    } else {
+        // Activate (Check uses first)
+        if (characterData.giantsMightUses > 0) {
+            characterData.giantsMightUses--;
+            ELEMENTS.giantsMightUses.value = characterData.giantsMightUses; // Update input directly
+            characterData.giantsMightActive = true;
+        } else {
+            alert("You have no uses of Giant's Might remaining.");
+            return;
+        }
+    }
+
+    updateGiantsMightUI(characterData.giantsMightActive);
+    debouncedSave();
+};
+
+// --- Action Surge Tracker Logic ---
+
+/**
+ * Expends one use of Action Surge.
+ */
+const expendActionSurge = () => {
+    if (characterData.actionSurgeUses > 0) {
+        if (confirm("Are you sure you want to expend one use of Action Surge?")) {
+            characterData.actionSurgeUses--;
+            ELEMENTS.actionSurgeUses.value = characterData.actionSurgeUses;
+            debouncedSave();
+        }
+    } else {
+        alert("You have no Action Surge uses remaining.");
+    }
+};
+
+// --- Rune Tracker Logic ---
+
+/**
+ * Expends one use of a specific Rune.
+ * @param {Event} event 
+ */
+const expendRune = (event) => {
+    const runeTracker = event.target.closest('.rune-tracker');
+    const rune = runeTracker.dataset.rune;
+    const usesInput = runeTracker.querySelector('.rune-uses-input');
+    
+    if (characterData.runes[rune] > 0) {
+        if (confirm(`Are you sure you want to expend one use of the ${rune.charAt(0).toUpperCase() + rune.slice(1)} Rune?`)) {
+            characterData.runes[rune]--;
+            usesInput.value = characterData.runes[rune];
+            debouncedSave();
+        }
+    } else {
+        alert(`You have no uses of the ${rune.charAt(0).toUpperCase() + rune.slice(1)} Rune remaining.`);
+    }
+};
+
+// =========================================================================
+// 10. DICE ROLL UI & CUSTOM ROLL LOGIC
+// =========================================================================
+
+/**
+ * Toggles the visibility of the dice log and custom roll UI.
+ */
+const toggleRollUI = () => {
+    const isVisible = ELEMENTS.customRollUi.classList.contains('hidden') === false;
+    
+    if (isVisible) {
+        ELEMENTS.customRollUi.classList.add('hidden');
+        ELEMENTS.diceLog.classList.add('hidden');
+    } else {
+        ELEMENTS.customRollUi.classList.remove('hidden');
+        // Show log only if it has rolls, otherwise, we'll wait for the first roll
+        const hasRolls = ELEMENTS.diceLog.children.length > 1 && !document.getElementById('log-placeholder').classList.contains('hidden');
+        if (hasRolls) { 
+            ELEMENTS.diceLog.classList.remove('hidden');
+        }
+    }
+};
+
+/**
+ * Executes a custom dice roll (e.g., 2d6+4).
+ */
+const handleCustomRoll = () => {
+    const count = parseInt(document.getElementById('dice-count-input').value) || 1;
+    const size = parseInt(document.getElementById('dice-size-select').value) || 20;
+    const modifier = parseInt(document.getElementById('modifier-input').value) || 0;
+
+    let totalRoll = 0;
+    let rollDetails = [];
+    
+    for (let i = 0; i < count; i++) {
+        const roll = rollDice(size);
+        totalRoll += roll;
+        rollDetails.push(roll);
+    }
+    
+    const finalResult = totalRoll + modifier;
+    
+    // Log the roll
+    logRoll(`Custom Roll (${count}d${size}${formatModifier(modifier)}): **${finalResult}**`, 
+            `(${rollDetails.join(' + ')}) ${formatModifier(modifier)}`);
+};
+
+/**
+ * Adds an entry to the dice roll log.
+ * @param {string} title 
+ * @param {string} breakdown 
+ */
+const logRoll = (title, breakdown) => {
+    // Ensure the placeholder is hidden
+    const placeholder = document.getElementById('log-placeholder');
+    if (placeholder) {
+        placeholder.classList.add('hidden');
+    }
+    
+    const logItem = document.createElement('div');
+    logItem.className = 'text-sm mb-1 p-1 border-b border-gray-700 last:border-b-0';
+    logItem.innerHTML = `
+        <p class="font-semibold text-yellow-400">${title}</p>
+        <p class="text-xs text-gray-400">${breakdown}</p>
+    `;
+
+    // Insert at the top of the log (after the header, but before existing rolls)
+    const logContainer = ELEMENTS.diceLog;
+    // The first child is the header (div.flex)
+    const firstRoll = logContainer.children[1]; 
+
+    if (firstRoll && !firstRoll.classList.contains('italic')) {
+        logContainer.insertBefore(logItem, firstRoll);
+    } else {
+        // If only the header and placeholder exist
+        logContainer.appendChild(logItem);
+    }
+    
+    // Ensure the log is visible
+    ELEMENTS.diceLog.classList.remove('hidden');
+};
+
+/**
+ * Clears all entries from the dice roll log.
+ */
+const clearRollLog = () => {
+    const logContainer = ELEMENTS.diceLog;
+    // Keep only the first element (the header/clear button)
+    // We start removing from the second element (index 1) to preserve the header
+    while (logContainer.children.length > 1) {
+        logContainer.removeChild(logContainer.lastChild);
+    }
+    document.getElementById('log-placeholder').classList.remove('hidden');
+    ELEMENTS.diceLog.classList.add('hidden');
+};
+
+// =========================================================================
+// 11. RESTING LOGIC
+// =========================================================================
+
+/**
+ * Handles the logic for a Short Rest.
+ */
+const handleShortRest = () => {
+    if (confirm("Are you sure you want to take a Short Rest?")) {
+        // Recover short-rest resources
+        characterData.actionSurgeUses = 1; 
+        characterData.giantsMightUses = 1; 
+        characterData.runes.fire = 1;
+        characterData.runes.frost = 1;
+
+        // Clear Temporary HP
+        characterData.tempHp = 0;
+
+        // Update UI and save
+        updateUI();
+        alert("Short Rest complete! Resources recovered. Remember to spend Hit Dice manually.");
+    }
+};
+
+/**
+ * Handles the logic for a Long Rest.
+ */
+const handleLongRest = () => {
+    if (confirm("Are you sure you want to take a Long Rest?")) {
+        // Full resource recovery
+        characterData.actionSurgeUses = 1; 
+        characterData.giantsMightUses = 1; 
+        characterData.runes.fire = 1;
+        characterData.runes.frost = 1;
+
+        // Restore all HP
+        characterData.currentHp = characterData.maxHp;
+        
+        // Clear Temporary HP
+        characterData.tempHp = 0;
+
+        // Restore half of maximum Hit Dice (rounded down, min 1)
+        const maxLevel = parseInt(characterData.raceClassLevel.match(/\d+/g)?.[0]) || 1; // Attempt to pull level from string
+        const restoredHitDice = Math.max(1, Math.floor(maxLevel / 2));
+        characterData.hitDiceCount = restoredHitDice; 
+
+        // Clear Death Saves
+        characterData.deathSaves.successes = 0;
+        characterData.deathSaves.failures = 0;
+
+        // Update UI and save
+        updateUI();
+        alert("Long Rest complete! HP and resources restored.");
+    }
+};
+
+
+// =========================================================================
+// 12. INITIALIZATION AND EVENT ATTACHMENT
+// =========================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- ATTACH INPUT LISTENERS (Change/Input) ---
+    ELEMENTS.mainContent.addEventListener('change', (event) => {
+        const target = event.target;
+
+        if (target.tagName === 'INPUT' && target.type !== 'checkbox' && target.type !== 'radio' && target.type !== 'submit') {
+            handleStatInputChange(event);
+        } else if (target.tagName === 'SELECT') {
+            handleStatInputChange(event);
+        } else if (target.className.includes('inventory-field-input')) {
+            handleInventoryFieldChange(event);
+        } else if (target.className.includes('prof-level-select')) {
+            handleSkillProficiencyChange(event);
+        }
+    });
+
+    // Handle checkboxes (Saving Throws, Death Saves)
+    ELEMENTS.mainContent.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.type === 'checkbox' || target.type === 'radio') {
+            handleCheckboxChange(event);
+        }
+    });
+
+    // Handle in-place feature name editing (debounced save handled inside handler)
+    ELEMENTS.featuresList.addEventListener('input', (event) => {
+        if (event.target.className.includes('feature-name-textarea')) {
+            // Auto-adjust is handled inside renderFeatures/handleFeatureNameChange (must re-implement auto-adjust outside the debounced save)
+            // Note: Auto-adjust logic was not strictly necessary for functionality, only UX.
+            handleFeatureNameChange(event);
+        }
+    });
+
+
+    // --- ATTACH FORM SUBMISSION LISTENERS (Inventory/Combat) ---
+    if (ELEMENTS.addAttackForm) ELEMENTS.addAttackForm.addEventListener('submit', addAttack);
+    if (ELEMENTS.addItemForm) ELEMENTS.addItemForm.addEventListener('submit', addItem);
+    if (ELEMENTS.addFeatureForm) ELEMENTS.addFeatureForm.addEventListener('submit', addFeature);
+
+
+    // --- ATTACH CLICK LISTENERS (Buttons & Rolls) ---
+    
+    // Delegation for various button clicks
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        
+        // Dice Rolls (D20s on sheet)
+        if (target.closest('.roll-d20')) {
+            handleD20Roll(event);
+        }
+        
+        // Dice Roll Modal Close
+        if (target === ELEMENTS.rollModalClose || target === ELEMENTS.rollModal) {
+            closeRollModal();
+        }
+
+        // Feature Toggles/Expending
+        if (target === ELEMENTS.giantsMightToggle) {
+            toggleGiantsMight();
+        } else if (target === ELEMENTS.actionSurgeExpend) {
+            expendActionSurge();
+        } else if (target.className.includes('rune-expend-button')) {
+            expendRune(event);
+        }
+
+        // Rest Buttons (Assuming standard IDs were present in original HTML)
+        if (target.id === 'short-rest-button') {
+            handleShortRest();
+        } else if (target.id === 'long-rest-button') {
+            handleLongRest();
+        }
+        
+        // Login/Logout
+        if (target === ELEMENTS.loginLogoutButton) {
+            handleLoginLogout();
+        }
+
+        // Deletion Buttons (Attacks, Inventory, Features)
+        const deleteButton = target.closest('.delete-attack-button') || 
+                             target.closest('.delete-item-button') ||
+                             target.closest('.delete-feature-button');
+        if (deleteButton) {
+            if (confirm("Are you sure you want to delete this item? This cannot be undone.")) {
+                if (deleteButton.className.includes('delete-attack-button')) {
+                    deleteAttack(deleteButton.dataset.attackId);
+                } else if (deleteButton.className.includes('delete-item-button')) {
+                    deleteItem(deleteButton.dataset.itemId);
+                } else if (deleteButton.className.includes('delete-feature-button')) {
+                    deleteFeature(deleteButton.dataset.featureId);
+                }
+            }
+        }
+
+        // Navigation
+        if (target.closest('.nav-button')) {
+            handleNavigation(event);
+        }
+        
+        // Dice Log/Custom Roll UI
+        if (target === document.getElementById('roll-ui-toggle')) {
+            toggleRollUI();
+        } else if (target === document.getElementById('submit-custom-roll')) {
+            handleCustomRoll();
+        } else if (target === document.getElementById('clear-log-button')) {
+            clearRollLog();
+        }
+    });
+
+    // HP Change listener (using 'input' for better responsiveness than 'change')
+    ELEMENTS.mainContent.addEventListener('input', (event) => {
+        if (event.target === ELEMENTS.currentHpInput || event.target === ELEMENTS.tempHpInput) {
+            handleHpChange(event);
+        }
+    });
+    
+    // Textarea listeners (Debounced for performance)
+    if (ELEMENTS.notesTextarea) ELEMENTS.notesTextarea.addEventListener('input', debouncedNotesChange); 
+    if (ELEMENTS.originStoryTextarea) ELEMENTS.originStoryTextarea.addEventListener('input', debouncedOriginStoryChange);
+    
+    // --- SET INITIAL UI STATE ---
+    
+    // Set the default "Main" button to active on load
+    const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
+    if (defaultButton) {
+        defaultButton.classList.add('active');
+        defaultButton.style.borderTopWidth = '4px';
+        defaultButton.style.borderTopColor = '#ecc94b';
+    }
+
+    // Initialize Persistence logic (This is the entry point that calls loadCharacterData and updateUI)
+    initializePersistence();
+});
