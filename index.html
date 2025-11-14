@@ -428,7 +428,8 @@
                     </div>
                     
                     <div id="page-actions" class="page-content hidden">
-					<div
+					<div id="page-actions" class="page-content hidden">
+                        <div
                             class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
 
                             <div
@@ -547,9 +548,11 @@
                                                         class="text-yellow-400 font-bold">2</span>/2 (Resets Long Rest)</div>
                                                 <button id="deactivate-giants-might"
                                                     class="action-roll-button bg-red-600 hover:bg-red-700 border-red-500 text-white disabled:opacity-50 hidden transition duration-200"
+                                                    data-roll-type="deactivate"
                                                     title="Manually end the effect">Deactivate</button>
                                                 <button id="activate-giants-might"
-                                                    class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">Activate</button>
+                                                    class="action-roll-button bg-green-600 hover:bg-green-700 border-green-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                                                    data-roll-type="activate">Activate</button>
                                             </div>
                                         </div>
                                         <div
@@ -656,7 +659,7 @@
                                                         <div class="text-xs font-bold uppercase text-gray-400">Hit / DC
                                                         </div>
                                                         <div class="text-lg font-semibold">12 <span
-                                                                class="text-sm text-gray-400">(STR)</span></div>
+                                                            class="text-sm text-gray-400">(STR)</span></div>
                                                     </div>
                                                     <div>
                                                         <div class="text-xs font-bold uppercase text-gray-400">Damage
@@ -902,7 +905,7 @@
                                                 </div>
                                                 <div class="space-y-2 border-t border-gray-700 pt-3">
                                                     <p><span class="font-semibold text-white">Fire Rune:</span> While wearing or carrying an object inscribed with this rune, your **proficiency bonus is doubled** for any ability check you make that uses your proficiency with a tool.</p>
-                                                    <p class="pl-4 border-l border-gray-600">In addition, when you hit a creature with an attack using a weapon, you can use your reaction to invoke the rune to summon fiery shackles: the target takes an **extra 2d6 fire damage**, and it must succeed on a **Strength saving throw (DC 12)** or be **restrained** (takes 2d6 fire damage at the start of each of its turns). Once invoked, rests on a **short or long rest**.</p>
+                                                    <p class="pl-4 border-l border-gray-600">In addition, when you hit a creature with an attack using a weapon, you can use your **reaction** to invoke the rune to summon fiery shackles: the target takes an **extra 2d6 fire damage**, and it must succeed on a **Strength saving throw (DC 12)** or be **restrained** (takes 2d6 fire damage at the start of each of its turns). Once invoked, rests on a **short or long rest**.</p>
                                                 </div>
                                                 <div class="space-y-2 border-t border-gray-700 pt-3">
                                                     <p><span class="font-semibold text-white">Frost Rune:</span> While wearing or carrying an object inscribed with this rune, you have **advantage on Wisdom (Animal Handling) checks and Charisma (Intimidation) checks**.</p>
@@ -921,6 +924,7 @@
                         </div>
                     </div>
                     <div id="page-background" class="page-content hidden">
+					<div id="page-background" class="page-content hidden">
                         <div
                             class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 min-h-[400px]">
                             <h2
