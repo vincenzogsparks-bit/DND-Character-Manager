@@ -884,7 +884,7 @@ function clearArmorForm() {
     if (ELEMENTS.armorNameInput) ELEMENTS.armorNameInput.value = '';
     if (ELEMENTS.armorTypeSelect) ELEMENTS.armorTypeSelect.value = 'Light';
     if (ELEMENTS.armorAcInput) ELEMENTS.armorAcInput.value = '';
-    if (ELEMENTS.armorMaxDexInput) ELEMENTS.armorMaxDexInput.value = '0';
+    if (ELEMENTELEMENTS.armorMaxDexInput) ELEMENTS.armorMaxDexInput.value = '0';
     if (ELEMENTS.armorIsProficientSelect) ELEMENTS.armorIsProficientSelect.value = 'Yes';
     if (ELEMENTS.armorWeightInput) ELEMENTS.armorWeightInput.value = '';
     if (ELEMENTS.armorCostInput) ELEMENTS.armorCostInput.value = '';
@@ -1625,52 +1625,9 @@ function showAppPage(pageIdToShow) {
 
 // --- CHARACTER SHEET NAVIGATION LOGIC (CRITICAL FIX APPLIED HERE) ---
 
-function handleNavigation(event) {
-    const clickedButton = event.target.closest('.nav-button');
-    if (!clickedButton) return; 
-
-    const targetPageId = clickedButton.dataset.page;
-    
-    // *** MODIFICATION START: Use ELEMENTS cache for reliable hide/show ***
-    // 1. Hide ALL internal pages
-    if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.add('hidden');
-    if (ELEMENTS.pageActions) ELEMENTS.pageActions.classList.add('hidden');
-    if (ELEMENTS.pageFeatures) ELEMENTS.pageFeatures.classList.add('hidden');
-    if (ELEMENTS.pageBackground) ELEMENTS.pageBackground.classList.add('hidden');
-    if (ELEMENTS.pageInventory) ELEMENTS.pageInventory.classList.add('hidden');
-    if (ELEMENTS.pageNotes) ELEMENTS.pageNotes.classList.add('hidden');
-    // *** MODIFICATION END ***
-
-    // 2. Deactivate all buttons
-    document.querySelectorAll('.nav-button').forEach(button => {
-        button.classList.remove('active');
-        // Reset manual style overrides applied by the active class logic
-        button.style.borderTopWidth = '4px';
-        button.style.borderTopColor = 'transparent';
-    });
-
-    // *** MODIFICATION START: Use ELEMENTS cache to show target page ***
-    // 3. Show the target page
-    // --- THIS IS THE FIX ---
-    // Convert 'page-actions' to 'pageActions'
-    const targetPageKey = targetPageId.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
-    const targetPage = ELEMENTS[targetPageKey]; 
-    // --- END OF FIX ---
-    
-    if (targetPage) {
-        targetPage.classList.remove('hidden');
-    } else {
-        console.warn(`Internal character sheet page with ID ${targetPageId} (key: ${targetPageKey}) not found in ELEMENTS.`);
-        // Fallback to default
-        if (ELEMENTS.pageMain) ELEMENTS.pageMain.classList.remove('hidden');
-    }
-    // *** MODIFICATION END ***
-
-    // 4. Activate the clicked button
-    clickedButton.classList.add('active');
-    clickedButton.style.borderTopWidth = '4px';
-    clickedButton.style.borderTopColor = '#ecc94b'; 
-}
+// --- DELETED ---
+// The 'handleNavigation' function was here. It has been completely removed as requested.
+// --- DELETED ---
 
 
 // --- SPLASH SCREEN LOGIC (Unchanged) ---
@@ -2202,8 +2159,9 @@ document.addEventListener('DOMContentLoaded', () => {
         notesTextarea: document.getElementById('notes-content-textarea'),
         originStoryTextarea: document.getElementById('origin-story-textarea'),
         
-        // *** NAVIGATION FIX STEP 1: Add mainNavigation ***
-        mainNavigation: document.getElementById('main-navigation'),
+        // --- DELETED ---
+        // 'mainNavigation' element definition removed.
+        // --- DELETED ---
         
         // NEW: Character Creation Form Elements
         createCharName: document.getElementById('create-char-name'),
@@ -2355,14 +2313,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // (The .nav-button check that was here has been removed)
     });
 
-    // *** NAVIGATION FIX STEP 3: Add a new, dedicated listener for navigation ***
-    if (ELEMENTS.mainNavigation) {
-        ELEMENTS.mainNavigation.addEventListener('click', (event) => {
-            if (event.target.closest('.nav-button')) {
-                handleNavigation(event);
-            }
-        });
-    }
+    // --- DELETED ---
+    // The 'mainNavigation' event listener was here. It has been removed.
+    // --- DELETED ---
 
     // HP Change listener (using 'input' for better responsiveness than 'change')
     if (ELEMENTS.mainContent) ELEMENTS.mainContent.addEventListener('input', (event) => {
@@ -2383,7 +2336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // *** END NEW ***
     });
     
-	
     // *** NEW: Class Change Listener (For Saving Throw Auto-Selection) ***
     if (ELEMENTS.createCharClass) ELEMENTS.createCharClass.addEventListener('change', handleClassChange);
     
@@ -2393,13 +2345,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- SET INITIAL UI STATE ---
     
-    // Set the default "Main" button to active on load
-    const defaultButton = document.querySelector('.nav-button[data-page="page-main"]');
-    if (defaultButton) {
-        defaultButton.classList.add('active');
-        defaultButton.style.borderTopWidth = '4px';
-        defaultButton.style.borderTopColor = '#ecc94b';
-    }
+    // --- DELETED ---
+    // The code to set the 'Main' button to active was here. It has been removed.
+    // --- DELETED ---
 
     // Initialize Persistence logic
     initializePersistence();
